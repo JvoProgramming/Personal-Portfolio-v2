@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a6fd6"/><stop offset="0.6" stop-color="#7fb4ee"/><stop offset="1" stop-color="#cfe6fb"/></linearGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6fc03c"/><stop offset="1" stop-color="#2f7d17"/></linearGradient>
+    <radialGradient id="cloud"><stop offset="0" stop-color="#fff" stop-opacity="0.95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <ellipse cx="380" cy="190" rx="260" ry="60" fill="url(#cloud)"/>
+  <ellipse cx="1100" cy="140" rx="320" ry="70" fill="url(#cloud)"/>
+  <ellipse cx="1350" cy="300" rx="200" ry="40" fill="url(#cloud)"/>
+  <path d="M0 640 C 350 470, 800 500, 1050 580 S 1450 640, 1600 600 L1600 900 L0 900 Z" fill="url(#grass)"/>
+  <path d="M0 720 C 400 640, 900 700, 1600 690 L1600 900 L0 900 Z" fill="#3f9a22" opacity="0.6"/>
+</svg>
