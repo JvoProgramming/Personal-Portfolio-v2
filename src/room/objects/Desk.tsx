@@ -112,17 +112,18 @@ function useScreensaver(active: boolean) {
     canvas.height = 240
     const texture = new THREE.CanvasTexture(canvas)
     texture.colorSpace = THREE.SRGBColorSpace
-    return { canvas, ctx: canvas.getContext('2d')!, texture, x: 40, y: 50, vx: 46, vy: 34, acc: 1 }
+    return { canvas, ctx: canvas.getContext('2d')!, texture }
   }, [])
+  const motion = useRef({ x: 40, y: 50, vx: 46, vy: 34, acc: 1 })
 
   useFrame((_, delta) => {
     if (!active) return
-    const s = saver
+    const s = motion.current
     s.acc += delta
     if (s.acc < 1 / 24) return
     const dt = Math.min(s.acc, 0.2)
     s.acc = 0
-    const { ctx, canvas } = s
+    const { ctx, canvas, texture } = saver
     const w = canvas.width
     const h = canvas.height
     const logoW = 132
@@ -156,7 +157,7 @@ function useScreensaver(active: boolean) {
     // Scanlines.
     ctx.fillStyle = 'rgba(0,0,0,0.22)'
     for (let yy = 0; yy < h; yy += 3) ctx.fillRect(0, yy, w, 1)
-    s.texture.needsUpdate = true
+    texture.needsUpdate = true
   })
 
   return saver.texture
