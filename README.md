@@ -11,7 +11,7 @@ npm run build    # type-check and build to dist/
 npm run lint
 ```
 
-Add `?no3d` to the URL to skip the 3D room.
+Add `?no3d` to the URL to skip the 3D room, or `?time=19.5` to preview the room at 7:30pm Los Angeles time.
 
 ## How it's organized
 
@@ -20,7 +20,8 @@ Add `?no3d` to the URL to skip the 3D room.
 | `src/os/` | The XP shell: boot screen, welcome screen, desktop, windows, taskbar, Start menu, and the Zustand store |
 | `src/apps/` | One file per desktop app. `registry.ts` lists every app, its icon, and which accounts see it |
 | `src/content/` | All the text: resume, projects, recipes, photos, wiki page. `blog/` and `garden/` hold Markdown posts |
-| `src/room/` | The 3D room, lazy-loaded. If it fails, the site falls back to the OS |
+| `src/room/` | The 3D room, lazy-loaded. If it fails, the site falls back to the OS. `objects/` has one file per piece of furniture; `time.ts` sets the sky from LA time; `textures.ts` draws posters and photos in code |
+| `src/lib/i18n.ts` | English and Vietnamese text for the room, welcome screen, Start menu and app names |
 | `src/pages/` | Plain pages outside the OS, like `/resume` |
 | `public/wallpapers/` | Desktop wallpapers (SVG) |
 

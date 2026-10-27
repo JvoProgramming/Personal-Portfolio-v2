@@ -34,6 +34,8 @@ interface OsState {
   topZ: number
   startOpen: boolean
   wallpaperOverride: string | null
+  /** An app to open right after login, e.g. the Cookbook when someone clicks the food in the room. */
+  pendingApp: string | null
   setStage: (stage: Stage) => void
   logIn: (user: UserId) => void
   logOff: () => void
@@ -45,6 +47,7 @@ interface OsState {
   toggleMaximize: (id: string) => void
   moveWindow: (id: string, x: number, y: number) => void
   setWallpaper: (url: string | null) => void
+  setPendingApp: (appId: string | null) => void
 }
 
 let cascade = 0
@@ -56,6 +59,7 @@ export const useOs = create<OsState>((set, get) => ({
   topZ: 10,
   startOpen: false,
   wallpaperOverride: null,
+  pendingApp: null,
 
   setStage: (stage) => set({ stage, startOpen: false }),
 
@@ -124,6 +128,8 @@ export const useOs = create<OsState>((set, get) => ({
   moveWindow: (id, x, y) => set((s) => ({ windows: s.windows.map((w) => (w.id === id ? { ...w, x, y } : w)) })),
 
   setWallpaper: (wallpaperOverride) => set({ wallpaperOverride }),
+
+  setPendingApp: (pendingApp) => set({ pendingApp }),
 }))
 
 /** The window that currently has focus: the highest one that isn't minimized. */

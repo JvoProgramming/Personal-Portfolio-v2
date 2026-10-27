@@ -1,9 +1,12 @@
+import { LangSwitch } from '../components/LangSwitch'
+import { useT, type TKey } from '../lib/i18n'
 import { useOs } from './store'
 import { USERS } from './users'
 
 export function Welcome() {
   const logIn = useOs((s) => s.logIn)
   const setStage = useOs((s) => s.setStage)
+  const t = useT()
 
   return (
     <div className="welcome">
@@ -13,7 +16,7 @@ export function Welcome() {
           <div className="welcome__logo">
             Johnny <strong>XP</strong>
           </div>
-          <p>To begin, click your user name</p>
+          <p>{t('welcome.begin')}</p>
         </div>
         <div className="welcome__divider" aria-hidden="true" />
         <ul className="welcome__users" aria-label="User accounts">
@@ -24,8 +27,8 @@ export function Welcome() {
                   {u.avatar}
                 </span>
                 <span className="welcome__user-text">
-                  <span className="welcome__user-name">{u.name}</span>
-                  <span className="welcome__user-sub">{u.subtitle}</span>
+                  <span className="welcome__user-name">{t(`user.${u.id}` as TKey)}</span>
+                  <span className="welcome__user-sub">{t(`user.${u.id}.sub` as TKey)}</span>
                 </span>
               </button>
             </li>
@@ -34,11 +37,14 @@ export function Welcome() {
       </main>
       <div className="welcome__band welcome__band--bottom">
         <button type="button" className="welcome__power" onClick={() => setStage('off')}>
-          <span aria-hidden="true">⏻</span> Turn off computer
+          <span aria-hidden="true">⏻</span> {t('welcome.turnOff')}
         </button>
-        <a className="skip-link" href="/resume">
-          Skip to resume →
-        </a>
+        <div className="welcome__links">
+          <LangSwitch className="welcome__lang" />
+          <a className="skip-link" href="/resume">
+            {t('welcome.skipResume')}
+          </a>
+        </div>
       </div>
     </div>
   )

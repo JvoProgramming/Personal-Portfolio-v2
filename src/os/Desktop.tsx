@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { appsForUser, type AppDefinition } from '../apps/registry'
 import { isCoarsePointer } from '../lib/env'
+import { useAppTitle } from '../lib/i18n'
 import { StartMenu } from './StartMenu'
 import { activeWindowId, useOs } from './store'
 import { Taskbar } from './Taskbar'
@@ -15,6 +16,16 @@ export function Desktop() {
   const openApp = useOs((s) => s.openApp)
   const setStartOpen = useOs((s) => s.setStartOpen)
   const [selected, setSelected] = useState<string | null>(null)
+  const appTitle = useAppTitle()
+
+  // Open an app someone picked in the 3D room, if this account has it.
+  useEffect(() => {
+    const { pendingApp, setPendingApp } = useOs.getState()
+    if (!pendingApp || !user) return
+    setPendingApp(null)
+    const app = appsForUser(user).find((a) => a.id === pendingApp)
+    if (app) openApp(app.id, app.title, app.size)
+  }, [user, openApp])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -56,7 +67,7 @@ export function Desktop() {
                 <span className="desktop-icon__img" aria-hidden="true">
                   {app.icon}
                 </span>
-                <span className="desktop-icon__label">{app.title}</span>
+                <span className="desktop-icon__label">{appTitle(app.id, app.title)}</span>
               </button>
             </li>
           ))}
