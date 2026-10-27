@@ -1,6 +1,7 @@
+import { PerformanceMonitor } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Buzzer, Dust } from './objects/Ambience'
 import { Chair } from './objects/Chair'
@@ -11,6 +12,7 @@ import { Lamp } from './objects/Lamp'
 import { Mochi } from './objects/Mochi'
 import { Structure } from './objects/Structure'
 import { WindowSky } from './objects/WindowSky'
+import { isCoarsePointer } from '../lib/env'
 import { useRoom } from './roomStore'
 import type { Lighting } from './time'
 
@@ -47,7 +49,7 @@ function CameraRig({ onEnter }: { onEnter: () => void }) {
   return null
 }
 
-function Scene({ lighting, onEnter }: { lighting: Lighting; onEnter: () => void }) {
+function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: () => void; effects: boolean }) {
   return (
     <>
       <color attach="background" args={['#05060c']} />
@@ -68,16 +70,22 @@ function Scene({ lighting, onEnter }: { lighting: Lighting; onEnter: () => void 
       <Mochi />
       <Dust lighting={lighting} />
       <Buzzer lighting={lighting} />
-      <EffectComposer>
-        <Bloom mipmapBlur luminanceThreshold={0.9} luminanceSmoothing={0.2} intensity={0.9} />
-        <Vignette offset={0.25} darkness={0.55} />
-      </EffectComposer>
+      {effects && (
+        <EffectComposer>
+          <Bloom mipmapBlur luminanceThreshold={0.9} luminanceSmoothing={0.2} intensity={0.9} />
+          <Vignette offset={0.25} darkness={0.55} />
+        </EffectComposer>
+      )}
     </>
   )
 }
 
 export default function Room({ onEnter, lighting }: { onEnter: () => void; lighting: Lighting }) {
   const setHover = useRoom((s) => s.setHover)
+  // Start sharp on desktops and lighter on touch devices, then adjust to how fast this GPU really is.
+  const maxDpr = Math.min(window.devicePixelRatio || 1, 1.75)
+  const [dpr, setDpr] = useState(isCoarsePointer() ? 1 : maxDpr)
+  const [effects, setEffects] = useState(!isCoarsePointer())
 
   useEffect(() => () => setHover(null), [setHover])
 
@@ -85,11 +93,24 @@ export default function Room({ onEnter, lighting }: { onEnter: () => void; light
     <Canvas
       shadows
       camera={{ position: HOME.toArray(), fov: 55, near: 0.05, far: 40 }}
-      dpr={[1, 1.75]}
+      dpr={dpr}
       onPointerMissed={() => setHover(null)}
       aria-label="Johnny's bedroom in 3D"
     >
-      <Scene lighting={lighting} onEnter={onEnter} />
+      <PerformanceMonitor
+        flipflops={3}
+        onIncline={() => setDpr(maxDpr)}
+        onDecline={() => {
+          setDpr(1)
+          setEffects(false)
+        }}
+        onFallback={() => {
+          setDpr(1)
+          setEffects(false)
+        }}
+      >
+        <Scene lighting={lighting} onEnter={onEnter} effects={effects} />
+      </PerformanceMonitor>
     </Canvas>
   )
 }

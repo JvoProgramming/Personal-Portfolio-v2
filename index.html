@@ -5,9 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Johnny's Portfolio</title>
+    <meta name="description" content="Johnny Vo, software engineer in Los Angeles. Walk into his 3D bedroom, boot up a Windows XP style desktop, and browse his resume, projects and blog." />
+    <meta name="theme-color" content="#05060c" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Johnny's Portfolio" />
+    <meta property="og:description" content="A 3D bedroom and a Windows XP style desktop with Johnny's resume, projects, blog and games." />
+    <meta name="twitter:card" content="summary" />
+    <style>
+      /* Dark from the first paint, so there's no white flash before the app loads. */
+      html { background: #05060c; color-scheme: dark; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <p style="color:#fff;font-family:sans-serif;padding:16px">This site needs JavaScript turned on.</p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

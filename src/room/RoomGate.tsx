@@ -6,6 +6,7 @@ import { useOs } from '../os/store'
 import { useRoom } from './roomStore'
 import { FRAME_PHOTOS, gameBoyScreen, photoTexture } from './textures'
 import { getLighting } from './time'
+import { RoomLoading } from './RoomLoading'
 import './room.css'
 
 // The 3D code is its own chunk. If it fails to load or crashes, we fall through to the OS.
@@ -61,7 +62,7 @@ function RoomModal() {
   )
 }
 
-export function RoomGate() {
+export default function RoomGate() {
   const setStage = useOs((s) => s.setStage)
   const hover = useRoom((s) => s.hover)
   const poweringOn = useRoom((s) => s.poweringOn)
@@ -75,7 +76,7 @@ export function RoomGate() {
   return (
     <div className="room">
       <ErrorBoundary fallback={null} onError={enterOs}>
-        <Suspense fallback={<div className="room__loading">{t('room.loading')}</div>}>
+        <Suspense fallback={<RoomLoading />}>
           <Room onEnter={enterOs} lighting={lighting} />
         </Suspense>
       </ErrorBoundary>

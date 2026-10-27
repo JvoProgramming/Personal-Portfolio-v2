@@ -10,14 +10,20 @@ export function isSmallScreen(): boolean {
   return typeof window !== 'undefined' && window.innerWidth < 720
 }
 
-/** True when the browser can create a WebGL context. */
+let webgl: boolean | undefined
+
+/** True when the browser can create a WebGL context. Checked once, since each check makes a context. */
 export function hasWebGL(): boolean {
+  if (webgl !== undefined) return webgl
   try {
     const canvas = document.createElement('canvas')
-    return Boolean(canvas.getContext('webgl2') ?? canvas.getContext('webgl'))
+    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl')
+    webgl = Boolean(gl)
+    gl?.getExtension('WEBGL_lose_context')?.loseContext()
   } catch {
-    return false
+    webgl = false
   }
+  return webgl
 }
 
 /** The 3D room is skipped on phones, without WebGL, and with reduced motion. */
