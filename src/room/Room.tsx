@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Buzzer, Dust } from './objects/Ambience'
 import { Chair } from './objects/Chair'
-import { Curtains, FairyLights, Plant, WallClock } from './objects/Cozy'
+import { BeanBag, Curtains, FairyLights, Plant, WallClock } from './objects/Cozy'
 import { Food, GameBoy, Posters, Shelf } from './objects/Decor'
 import { GuitarController } from './objects/Guitar'
 import { TennisGear } from './objects/Tennis'
@@ -89,6 +89,7 @@ function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: ()
       <FairyLights lighting={lighting} />
       <WallClock />
       <Plant />
+      <BeanBag />
       <Curtains />
       <Dust lighting={lighting} />
       <Buzzer lighting={lighting} />
@@ -113,7 +114,7 @@ export default function Room({ onEnter, lighting }: { onEnter: () => void; light
 
   return (
     <Canvas
-      shadows
+      shadows="percentage"
       // No tone mapping, so the room looks the same with or without the post effects.
       flat
       camera={{ position: HOME.toArray(), fov: 55, near: 0.05, far: 40 }}

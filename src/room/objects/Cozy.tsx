@@ -3,6 +3,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { ROOM, WINDOW, seeded } from '../layout'
 import { laHours, type Lighting } from '../time'
+import { Model } from '../Model'
 
 const BULBS = 34
 const BULB_COLORS = ['#ffcf7a', '#ffb35c', '#ffe2a8', '#ff9f6b']
@@ -129,7 +130,7 @@ export function WallClock() {
 }
 
 /** A snake plant in a terracotta pot, in the corner by the window. */
-export function Plant() {
+function HandBuiltPlant() {
   const leaves = useMemo(() => {
     const random = seeded(7)
     return Array.from({ length: 9 }, (_, i) => {
@@ -139,7 +140,7 @@ export function Plant() {
     })
   }, [])
   return (
-    <group position={[2.62, 0, -2.12]}>
+    <group>
       <mesh position={[0, 0.13, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.15, 0.11, 0.26, 24]} />
         <meshStandardMaterial color="#b5653d" roughness={0.9} />
@@ -156,6 +157,32 @@ export function Plant() {
           </mesh>
         </group>
       ))}
+    </group>
+  )
+}
+
+export function Plant() {
+  return (
+    <group position={[2.62, 0, -2.12]}>
+      <Model url="/models/snake_plant.glb" fit={{ height: 0.78 }} fallback={<HandBuiltPlant />} />
+    </group>
+  )
+}
+
+/** A plaid bean bag in the corner by Mochi's bed. */
+export function BeanBag() {
+  return (
+    <group position={[-2.42, 0, 0.05]} rotation={[0, 0.9, 0]}>
+      <Model
+        url="/models/bean_bag.glb"
+        fit={{ width: 0.85 }}
+        fallback={
+          <mesh position={[0, 0.25, 0]} scale={[1, 0.62, 1]} castShadow receiveShadow>
+            <sphereGeometry args={[0.42, 32, 24]} />
+            <meshStandardMaterial color="#8e2b34" roughness={0.95} />
+          </mesh>
+        }
+      />
     </group>
   )
 }

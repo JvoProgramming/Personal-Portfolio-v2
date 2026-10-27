@@ -3,6 +3,7 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { useInteractive } from '../interactive'
+import { Model } from '../Model'
 import { deform, grainNormal, strandNormal, weaveNormal } from '../materials'
 
 // Measurements (meters). The seat's front faces -z (toward the desk); the backrest is at +z.
@@ -11,7 +12,9 @@ const SEAT = { w: 0.5, d: 0.47, t: 0.09 }
 const BACK = { w: 0.46, h: 0.56, t: 0.075 }
 const BACK_Z = 0.25
 const BACK_Y = SEAT_Y + 0.12
-const RECLINE = 0.16 // radians, top of the backrest leans away from the seat
+const RECLINE = 0.16
+/** Turns the downloaded chair so its seat faces the desk at the same angle as the built one. */
+const CHAIR_TURN = 0 // radians, top of the backrest leans away from the seat
 
 /** A contoured seat cushion: rounded box with a dished top and a rolled "waterfall" front edge. */
 function seatGeometry() {
@@ -233,22 +236,20 @@ export function Chair() {
     document.body.style.cursor = ''
   }
 
-  // Pushed back from the desk and turned toward you, so it doesn't hide the monitor.
-  return (
-    <group position={[0.42, 0, -1.02]}>
-      {/* Five-star base */}
-      {[0, 1, 2, 3, 4].map((i) => (
-        <BaseLeg key={i} angle={(i / 5) * Math.PI * 2 + 0.3} metal={mats.metal} plastic={mats.plastic} />
-      ))}
-      <mesh position={[0, 0.1, 0]} material={mats.metal} castShadow>
-        <cylinderGeometry args={[0.05, 0.06, 0.05, 20]} />
-      </mesh>
-      <mesh position={[0, 0.3, 0]} material={mats.chrome} castShadow>
-        <cylinderGeometry args={[0.022, 0.022, 0.36, 16]} />
-      </mesh>
-      <mesh geometry={bellows} material={mats.plastic} castShadow />
-      {/* Spinning top part */}
-      <group ref={spinner} rotation={[0, -0.75, 0]} {...props} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}>
+  const handBuilt = (
+    <group>
+        {/* Five-star base */}
+        {[0, 1, 2, 3, 4].map((i) => (
+          <BaseLeg key={i} angle={(i / 5) * Math.PI * 2 + 0.3} metal={mats.metal} plastic={mats.plastic} />
+        ))}
+        <mesh position={[0, 0.1, 0]} material={mats.metal} castShadow>
+          <cylinderGeometry args={[0.05, 0.06, 0.05, 20]} />
+        </mesh>
+        <mesh position={[0, 0.3, 0]} material={mats.chrome} castShadow>
+          <cylinderGeometry args={[0.022, 0.022, 0.36, 16]} />
+        </mesh>
+        <mesh geometry={bellows} material={mats.plastic} castShadow />
+        <group rotation={[0, -0.75, 0]}>
         {/* Tilt mechanism and lever */}
         <mesh position={[0, SEAT_Y - 0.07, 0]} material={mats.metal} castShadow>
           <boxGeometry args={[0.2, 0.04, 0.22]} />
@@ -282,6 +283,15 @@ export function Chair() {
             <mesh position={[0, SEAT_Y + 0.21, 0.02]} material={mats.plastic} castShadow geometry={ARM_PAD} />
           </group>
         ))}
+        </group>
+    </group>
+  )
+
+  // Pushed back from the desk and turned toward you, so it doesn't hide the monitor.
+  return (
+    <group position={[0.42, 0, -1.02]}>
+      <group ref={spinner} {...props} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}>
+        <Model url="/models/office_chair.glb" fit={{ height: 1.02 }} rotation={[0, CHAIR_TURN, 0]} fallback={handBuilt} />
       </group>
     </group>
   )

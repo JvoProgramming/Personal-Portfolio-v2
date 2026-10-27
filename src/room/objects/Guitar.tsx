@@ -5,6 +5,7 @@ import { useOs } from '../../os/store'
 import { useInteractive } from '../interactive'
 import { ROOM } from '../layout'
 import { useRoom } from '../roomStore'
+import { Model } from '../Model'
 
 // A plastic rhythm-game guitar controller, modeled on the classic SG-shaped one:
 // glossy red body with a white pickguard, five colored fret buttons, strum bar, whammy bar.
@@ -97,44 +98,54 @@ export function GuitarController() {
 
   return (
     <group position={[1.35, 0.015, -ROOM.halfD + 0.17]} rotation={[0.16, -0.3, 0.1]} {...props}>
-      <group scale={1.3}>
-      <mesh geometry={parts.body} material={mats.red} castShadow receiveShadow />
-      <mesh geometry={parts.guard} material={mats.white} position={[0, 0, front]} castShadow />
-      {/* Strum bar sits in the pickguard's slot */}
-      <mesh geometry={parts.strum} material={mats.white} position={[0.015, 0.155, front + 0.006]} castShadow />
-      <mesh geometry={parts.whammy} material={mats.chrome} position={[0, 0, front - 0.03]} castShadow />
-      <mesh material={mats.chrome} position={[0.08, 0.075, front + 0.002]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.009, 0.009, 0.008, 16]} />
-      </mesh>
-      {/* Start / select and volume knobs */}
-      {[
-        [-0.075, 0.11],
-        [-0.095, 0.075],
-      ].map(([x, y]) => (
-        <mesh key={x} material={mats.black} position={[x, y, front + 0.004]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.011, 0.012, 0.012, 20]} />
-        </mesh>
-      ))}
-      <mesh material={mats.gray} position={[0.04, 0.215, front + 0.003]}>
-        <boxGeometry args={[0.05, 0.012, 0.006]} />
-      </mesh>
-      </group>
-      {/* Neck, fretboard, buttons, headstock */}
-      <group position={[0, 0.08, 0]}>
-      <mesh geometry={parts.neck} material={mats.black} position={[0, 0.58, 0]} castShadow />
-      {[0.34, 0.42, 0.5, 0.58, 0.66].map((y) => (
-        <mesh key={y} material={mats.gray} position={[0, y, 0.0135]}>
-          <boxGeometry args={[0.05, 0.002, 0.001]} />
-        </mesh>
-      ))}
-      {FRETS.map((_, i) => (
-        <mesh key={i} geometry={parts.fret} material={mats.frets[i]} position={[0, 0.83 - i * 0.036, 0.016]} castShadow />
-      ))}
-      <mesh geometry={parts.head} material={mats.red} position={[0, 0.855, 0]} rotation={[-0.12, 0, 0]} castShadow />
-      <mesh material={mats.white} position={[0, 0.94, 0.012]}>
-        <boxGeometry args={[0.03, 0.03, 0.002]} />
-      </mesh>
-      </group>
+      <Model
+        url="/models/guitar_hero_controller.glb"
+        fit={{ longest: 0.98 }}
+        rotation={[Math.PI / 2, 0, Math.PI / 2]}
+        order="ZYX"
+        fallback={
+          <>
+            <group scale={1.3}>
+            <mesh geometry={parts.body} material={mats.red} castShadow receiveShadow />
+            <mesh geometry={parts.guard} material={mats.white} position={[0, 0, front]} castShadow />
+            {/* Strum bar sits in the pickguard's slot */}
+            <mesh geometry={parts.strum} material={mats.white} position={[0.015, 0.155, front + 0.006]} castShadow />
+            <mesh geometry={parts.whammy} material={mats.chrome} position={[0, 0, front - 0.03]} castShadow />
+            <mesh material={mats.chrome} position={[0.08, 0.075, front + 0.002]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.009, 0.009, 0.008, 16]} />
+            </mesh>
+            {/* Start / select and volume knobs */}
+            {[
+              [-0.075, 0.11],
+              [-0.095, 0.075],
+            ].map(([x, y]) => (
+              <mesh key={x} material={mats.black} position={[x, y, front + 0.004]} rotation={[Math.PI / 2, 0, 0]}>
+                <cylinderGeometry args={[0.011, 0.012, 0.012, 20]} />
+              </mesh>
+            ))}
+            <mesh material={mats.gray} position={[0.04, 0.215, front + 0.003]}>
+              <boxGeometry args={[0.05, 0.012, 0.006]} />
+            </mesh>
+            </group>
+            {/* Neck, fretboard, buttons, headstock */}
+            <group position={[0, 0.08, 0]}>
+            <mesh geometry={parts.neck} material={mats.black} position={[0, 0.58, 0]} castShadow />
+            {[0.34, 0.42, 0.5, 0.58, 0.66].map((y) => (
+              <mesh key={y} material={mats.gray} position={[0, y, 0.0135]}>
+                <boxGeometry args={[0.05, 0.002, 0.001]} />
+              </mesh>
+            ))}
+            {FRETS.map((_, i) => (
+              <mesh key={i} geometry={parts.fret} material={mats.frets[i]} position={[0, 0.83 - i * 0.036, 0.016]} castShadow />
+            ))}
+            <mesh geometry={parts.head} material={mats.red} position={[0, 0.855, 0]} rotation={[-0.12, 0, 0]} castShadow />
+            <mesh material={mats.white} position={[0, 0.94, 0.012]}>
+              <boxGeometry args={[0.03, 0.03, 0.002]} />
+            </mesh>
+            </group>
+          </>
+        }
+      />
     </group>
   )
 }

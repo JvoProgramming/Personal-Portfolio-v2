@@ -4,6 +4,7 @@ import { useInteractive } from '../interactive'
 import { useRoom } from '../roomStore'
 import { FRAME_PHOTOS, gameBoyScreen, photoTexture, posters, type FramePhoto } from '../textures'
 import { DESK, ROOM } from '../layout'
+import { Model } from '../Model'
 
 function Poster({ map, position, rotation = [0, 0, 0], size = [0.6, 0.9] }: { map: THREE.Texture; position: [number, number, number]; rotation?: [number, number, number]; size?: [number, number] }) {
   const { props } = useInteractive('obj.poster')
@@ -58,12 +59,22 @@ export function Shelf() {
       {FRAME_PHOTOS.map((p, i) => (
         <Frame key={p.id} photo={p} position={[-0.6 + i * 0.27, y + 0.12, z + (i % 2) * 0.03]} rotation={[-0.1, (i - 1.5) * 0.08, 0]} />
       ))}
-      {['#6c3483', '#1f618d', '#b9770e', '#117a65', '#922b21'].map((c, i) => (
-        <mesh key={c} position={[0.5 + i * 0.045, y + 0.1 + (i % 2) * 0.01, z]} rotation={[0, 0, i === 4 ? 0.25 : 0]} castShadow>
-          <boxGeometry args={[0.035, 0.18 + (i % 3) * 0.02, 0.15]} />
-          <meshStandardMaterial color={c} />
-        </mesh>
-      ))}
+      <group position={[0.6, y + 0.015, z]}>
+        <Model
+          url="/models/books_encyclopedia_set.glb"
+          fit={{ width: 0.34 }}
+          fallback={
+            <group position={[-0.6, -0.015, 0]}>
+              {['#6c3483', '#1f618d', '#b9770e', '#117a65', '#922b21'].map((c, i) => (
+                <mesh key={c} position={[0.5 + i * 0.045, y + 0.1 + (i % 2) * 0.01, z]} rotation={[0, 0, i === 4 ? 0.25 : 0]} castShadow>
+                  <boxGeometry args={[0.035, 0.18 + (i % 3) * 0.02, 0.15]} />
+                  <meshStandardMaterial color={c} />
+                </mesh>
+              ))}
+            </group>
+          }
+        />
+      </group>
     </group>
   )
 }
@@ -127,8 +138,13 @@ export function Food() {
         <meshStandardMaterial color="#3d281b" />
       </mesh>
       <group {...props}>
+        <group position={[x - 0.12, top, z - 0.05]}>
+          <Model
+            url="/models/pizza.glb"
+            fit={{ width: 0.36 }}
+            fallback={
+              <group position={[0, 0.01, 0]}>
         {/* Pizza: crust, sauce, cheese, pepperoni, ricotta, basil */}
-        <group position={[x - 0.12, top + 0.01, z - 0.05]}>
           <mesh receiveShadow castShadow>
             <cylinderGeometry args={[0.17, 0.17, 0.02, 32]} />
             <meshStandardMaterial color="#d79a54" roughness={0.9} />
@@ -159,6 +175,9 @@ export function Food() {
               <meshStandardMaterial color="#2f7d32" />
             </mesh>
           ))}
+              </group>
+            }
+          />
         </group>
         {/* Picanha frites */}
         <group position={[x + 0.17, top + 0.008, z + 0.08]}>

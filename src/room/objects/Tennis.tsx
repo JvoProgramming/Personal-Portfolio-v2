@@ -4,8 +4,12 @@ import { useInteractive } from '../interactive'
 import { ROOM } from '../layout'
 import { grainNormal, strandNormal, tennisBallMap } from '../materials'
 import { bake, cone, mixColor, union } from '../sdf'
+import { Model } from '../Model'
 
 const HEAD = { rx: 0.125, ry: 0.158 }
+/** Turns for the downloaded bag and racquet. */
+const BAG_TURN = 0
+const RACQUET_TURN = 0
 
 /** Overgrip wrapped in a spiral, painted on a canvas. */
 function gripTexture() {
@@ -202,12 +206,20 @@ function TennisBag() {
   )
 }
 
-function Ball({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
+function FeltBall({ rotation = 0 }: { rotation?: number }) {
   return (
-    <mesh position={position} rotation={[rotation, rotation * 1.7, 0]} castShadow>
+    <mesh rotation={[rotation, rotation * 1.7, 0]} castShadow>
       <sphereGeometry args={[0.033, 32, 24]} />
       <meshStandardMaterial map={tennisBallMap()} normalMap={strandNormal(2, 3000)} normalScale={[0.6, 0.6]} roughness={1} />
     </mesh>
+  )
+}
+
+function Ball({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
+  return (
+    <group position={[position[0], position[1] - 0.033, position[2]]} rotation={[0, rotation * 2, 0]}>
+      <Model url="/models/tennis_ball.glb" fit={{ height: 0.066 }} rotation={[rotation, 0, 0]} fallback={<group position={[0, 0.033, 0]}><FeltBall rotation={rotation} /></group>} />
+    </group>
   )
 }
 
@@ -245,7 +257,7 @@ export function TennisGear() {
   return (
     <group {...props}>
       <group position={[-2.3, 0, -2.18]} rotation={[0, 0.05, 0]}>
-        <TennisBag />
+        <Model url="/models/tennis_bag.glb" fit={{ width: 0.8 }} rotation={[0, BAG_TURN, 0]} fallback={<TennisBag />} />
       </group>
       <BallCan position={[-2.72, 0, -1.92]} />
       {/* Racquet hanging on a hook by the desk */}
@@ -254,7 +266,7 @@ export function TennisGear() {
         <meshStandardMaterial color="#b8bcc2" metalness={0.9} roughness={0.3} />
       </mesh>
       <group position={[-1.2, 1.13, -ROOM.halfD + 0.035]} rotation={[0, 0, 0.12]}>
-        <Racquet />
+        <Model url="/models/tennis_racquet.glb" fit={{ height: 0.685 }} position={[0, -0.51, 0]} rotation={[0, RACQUET_TURN, 0]} fallback={<Racquet />} />
       </group>
       {balls.map((p, i) => (
         <Ball key={i} position={p} rotation={i * 1.3} />
