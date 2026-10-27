@@ -105,25 +105,28 @@ export function Desk() {
 }
 
 /** The idle CRT plays an XP-style screensaver, so the one thing to click is the thing that glows and moves. */
-function useScreensaver(active: boolean) {
+function ScreenGlass({ poweringOn, hovered }: { poweringOn: boolean; hovered: boolean }) {
+  const material = useRef<THREE.MeshBasicMaterial>(null)
   const saver = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = 320
     canvas.height = 240
     const texture = new THREE.CanvasTexture(canvas)
     texture.colorSpace = THREE.SRGBColorSpace
-    return { canvas, ctx: canvas.getContext('2d')!, texture }
+    return texture
   }, [])
   const motion = useRef({ x: 40, y: 50, vx: 46, vy: 34, acc: 1 })
 
   useFrame((_, delta) => {
-    if (!active) return
+    const map = material.current?.map
+    if (poweringOn || !map) return
     const s = motion.current
     s.acc += delta
     if (s.acc < 1 / 24) return
     const dt = Math.min(s.acc, 0.2)
     s.acc = 0
-    const { ctx, canvas, texture } = saver
+    const canvas = map.image as HTMLCanvasElement
+    const ctx = canvas.getContext('2d')!
     const w = canvas.width
     const h = canvas.height
     const logoW = 132
@@ -157,18 +160,21 @@ function useScreensaver(active: boolean) {
     // Scanlines.
     ctx.fillStyle = 'rgba(0,0,0,0.22)'
     for (let yy = 0; yy < h; yy += 3) ctx.fillRect(0, yy, w, 1)
-    texture.needsUpdate = true
+    map.needsUpdate = true
   })
 
-  return saver.texture
+  return (
+    <mesh position={SCREEN_POS}>
+      <planeGeometry args={[0.44, 0.33]} />
+      <meshBasicMaterial ref={material} map={poweringOn ? screenTexture(true) : saver} toneMapped={false} color={poweringOn ? '#ffffff' : hovered ? '#e8eeff' : '#b8c4e6'} />
+    </mesh>
+  )
 }
 
 export function Computer() {
   const poweringOn = useRoom((s) => s.poweringOn)
   const powerOn = useRoom((s) => s.powerOn)
   const { hovered, props } = useInteractive('obj.computer', powerOn)
-  const saver = useScreensaver(!poweringOn)
-  const screen = poweringOn ? screenTexture(true) : saver
   const { y, z } = DESK
   const ledMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: '#39ff6a', toneMapped: false }), [])
   // Lights stay mounted and only change brightness: adding or removing a light recompiles every material.
@@ -184,10 +190,7 @@ export function Computer() {
         <planeGeometry args={[0.48, 0.37]} />
         <meshStandardMaterial color="#26251f" roughness={0.3} />
       </mesh>
-      <mesh position={SCREEN_POS}>
-        <planeGeometry args={[0.44, 0.33]} />
-        <meshBasicMaterial map={screen} toneMapped={false} color={poweringOn ? '#ffffff' : hovered ? '#e8eeff' : '#b8c4e6'} />
-      </mesh>
+      <ScreenGlass poweringOn={poweringOn} hovered={hovered} />
       <mesh position={[0, y + 0.1, z + 0.053]}>
         <planeGeometry args={[0.1, 0.012]} />
         <meshStandardMaterial color="#8d8676" />
