@@ -1,0 +1,189 @@
+.vegas {
+  display: flex;
+  flex-direction: column;
+  background: #3c3c3c;
+  color: #ddd;
+  font-family: Tahoma, sans-serif;
+  font-size: 11px;
+  min-height: 100%;
+}
+
+.vegas__menu {
+  padding: 3px 8px;
+  background: #ece9d8;
+  color: #000;
+  word-spacing: 10px;
+}
+
+.vegas__top {
+  display: flex;
+  flex: 1;
+  min-height: 200px;
+  gap: 4px;
+  padding: 4px;
+}
+
+.vegas__panel-title {
+  padding: 2px 6px;
+  background: #2a2a2a;
+  color: #bbb;
+}
+
+.vegas__media {
+  flex: 0 0 34%;
+  background: #4a4a4a;
+  border: 1px solid #222;
+  overflow: auto;
+}
+
+.vegas__media ul {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+}
+
+.vegas__media li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vegas__thumb {
+  width: 28px;
+  height: 20px;
+  flex: 0 0 auto;
+  border: 1px solid #111;
+}
+
+.vegas__thumb--audio {
+  background: repeating-linear-gradient(90deg, #2e8b57 0 2px, #1d5c39 2px 4px);
+}
+
+.vegas__preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #222;
+  border: 1px solid #111;
+  min-width: 0;
+}
+
+.vegas__preview canvas {
+  flex: 1;
+  width: 100%;
+  min-height: 140px;
+  background: #000;
+}
+
+.vegas__transport {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+}
+
+.vegas__transport button {
+  min-width: 32px;
+}
+
+.vegas__timecode {
+  margin-left: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: #7dff7a;
+  background: #000;
+  padding: 1px 6px;
+}
+
+.vegas__timeline {
+  display: flex;
+  flex: 0 0 auto;
+  background: #2d2d2d;
+  border-top: 2px solid #111;
+}
+
+.vegas__headers {
+  flex: 0 0 72px;
+  background: #4a4a4a;
+}
+
+.vegas__ruler-spacer,
+.vegas__ruler {
+  height: 18px;
+}
+
+.vegas__track-name,
+.vegas__track {
+  height: 30px;
+  border-bottom: 1px solid #222;
+}
+
+.vegas__track-name {
+  padding: 8px 6px;
+  box-sizing: border-box;
+}
+
+.vegas__lanes {
+  flex: 1;
+  position: relative;
+  cursor: text;
+  touch-action: none;
+  overflow: hidden;
+}
+
+.vegas__ruler {
+  position: relative;
+  background: #1e1e1e;
+}
+
+.vegas__ruler span {
+  position: absolute;
+  top: 2px;
+  padding-left: 2px;
+  border-left: 1px solid #777;
+  color: #999;
+  font-size: 9px;
+}
+
+.vegas__track {
+  position: relative;
+}
+
+.vegas__clip {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  padding: 2px 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #fff;
+  font-size: 10px;
+  border: 1px solid rgb(0 0 0 / 50%);
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+.vegas__clip--text {
+  background: #8a7a2a;
+}
+
+.vegas__clip--audio {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 3px, rgb(0 0 0 / 25%) 3px 4px),
+    linear-gradient(transparent 30%, #3fbf6f 30% 70%, transparent 70%),
+    #1d5c39;
+}
+
+.vegas__playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: #ff3b3b;
+  pointer-events: none;
+}

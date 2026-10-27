@@ -1,0 +1,278 @@
+.myspace {
+  min-height: 100%;
+  background: #0b0b1e radial-gradient(circle at 20% 10%, #23235a 0, transparent 40%), #0b0b1e;
+  color: #e8e8ff;
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 11px;
+}
+
+.myspace__topbar {
+  background: #003399;
+  padding: 6px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  align-items: baseline;
+}
+
+.myspace__brand {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.myspace__nav {
+  color: #fff;
+  font-size: 10px;
+}
+
+.myspace__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 14px;
+  padding: 12px;
+}
+
+@media (max-width: 760px) {
+  .myspace__columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.myspace__name {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+.glitter {
+  background: linear-gradient(90deg, #ff4fd8, #7ef9ff, #fff27a, #ff4fd8);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: glitter 3s linear infinite;
+}
+
+@keyframes glitter {
+  to {
+    background-position: 300% 0;
+  }
+}
+
+.blink {
+  animation: blink 1s steps(2, start) infinite;
+  color: #ff4fd8;
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.myspace__profile {
+  display: flex;
+  gap: 10px;
+}
+
+.myspace__pic {
+  width: 100px;
+  height: 100px;
+  flex: 0 0 auto;
+  display: grid;
+  place-content: center;
+  font-size: 60px;
+  background: #222255;
+  border: 2px solid #7ef9ff;
+}
+
+.myspace__facts p {
+  margin: 0 0 2px;
+}
+
+.myspace__online {
+  color: #7dff7a;
+  font-weight: bold;
+}
+
+.myspace__mood {
+  margin: 8px 0;
+}
+
+.myspace__box {
+  border: 1px solid #6699cc;
+  margin-bottom: 12px;
+  background: rgb(10 20 60 / 70%);
+}
+
+.myspace__box h3 {
+  margin: 0;
+  padding: 3px 6px;
+  background: #6699cc;
+  color: #fff;
+  font-size: 12px;
+}
+
+.myspace__box--orange {
+  border-color: #ff9933;
+}
+
+.myspace__box--orange h3 {
+  background: #ff9933;
+}
+
+.myspace__box > p,
+.myspace__box > h4 {
+  margin: 6px 8px;
+}
+
+.myspace__box h4 {
+  color: #ffcc66;
+}
+
+.myspace__contact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 6px;
+}
+
+.myspace__player ol {
+  margin: 6px 0;
+  padding-left: 26px;
+}
+
+.os-window .myspace__player button {
+  all: unset;
+  cursor: pointer;
+  color: #7ef9ff;
+}
+
+.os-window .myspace__player button:hover,
+.myspace__player button.is-playing {
+  color: #fff27a;
+  text-decoration: underline;
+}
+
+.myspace__player a {
+  color: #7ef9ff;
+}
+
+.myspace__player iframe {
+  display: block;
+  width: calc(100% - 12px);
+  aspect-ratio: 16 / 9;
+  margin: 0 6px 6px;
+  border: 0;
+}
+
+.myspace__interests {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.myspace__interests th {
+  text-align: left;
+  vertical-align: top;
+  width: 30%;
+  padding: 4px 6px;
+  background: rgb(102 153 204 / 25%);
+  color: #ffcc66;
+}
+
+.myspace__interests td {
+  padding: 4px 6px;
+}
+
+.myspace__extended {
+  border: 1px solid #6699cc;
+  padding: 10px;
+  text-align: center;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.myspace__mask {
+  width: 90px;
+  height: 100px;
+  margin: 10px auto 0;
+  border-radius: 45px 45px 40px 40px;
+  background:
+    radial-gradient(ellipse 14px 9px at 30% 45%, #fff 60%, transparent 62%),
+    radial-gradient(ellipse 14px 9px at 70% 45%, #fff 60%, transparent 62%),
+    linear-gradient(90deg, transparent 44%, #ffd700 44% 56%, transparent 56%),
+    #2a3fbf;
+  border: 3px solid #ffd700;
+  position: relative;
+}
+
+.myspace__hero p {
+  text-align: center;
+}
+
+.myspace__count {
+  margin: 6px 8px;
+  color: #ff9999;
+}
+
+.myspace__top8 {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.myspace__top8 li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.myspace__friend-name {
+  color: #7ef9ff;
+  text-decoration: underline;
+  font-size: 10px;
+}
+
+.myspace__friend-pic {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-content: center;
+  font-size: 32px;
+  background: #222255;
+  border: 1px solid #6699cc;
+}
+
+.myspace__comment {
+  display: flex;
+  gap: 10px;
+  padding: 6px 8px;
+  border-top: 1px solid rgb(102 153 204 / 40%);
+}
+
+.myspace__comment-who {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+  flex: 0 0 auto;
+  color: #7ef9ff;
+}
+
+.myspace__comment-who span:first-child {
+  font-size: 28px;
+}
+
+.myspace__comment p {
+  margin: 0 0 4px;
+}
+
+.myspace__comment-when {
+  color: #ffcc66;
+  font-weight: bold;
+}

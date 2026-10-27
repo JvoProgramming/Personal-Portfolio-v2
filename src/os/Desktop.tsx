@@ -23,8 +23,8 @@ export function Desktop() {
     const { pendingApp, setPendingApp } = useOs.getState()
     if (!pendingApp || !user) return
     setPendingApp(null)
-    const app = appsForUser(user).find((a) => a.id === pendingApp)
-    if (app) openApp(app.id, app.title, app.size)
+    const app = appsForUser(user).find((a) => a.id === pendingApp.appId)
+    if (app) openApp(app.id, app.title, { ...app.size, ...pendingApp.options })
   }, [user, openApp])
 
   useEffect(() => {
