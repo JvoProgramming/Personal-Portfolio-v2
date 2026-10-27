@@ -36,11 +36,10 @@
   background: rgb(8 12 30 / 70%);
   color: #f1f4ff;
   font-size: 14px;
-  white-space: nowrap;
   pointer-events: none;
+  width: max-content;
   max-width: calc(100% - 32px);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
 }
 
 .room__actions {
