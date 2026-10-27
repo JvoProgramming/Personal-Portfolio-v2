@@ -5,7 +5,7 @@ import { moveFocus } from './menuFocus'
 import { useOs } from './store'
 import type { UserAccount } from './users'
 
-const PLACES = new Set(['my-documents', 'recycle-bin', 'contact'])
+const PLACES = new Set(['my-documents', 'recycle-bin', 'contact', 'credits'])
 
 export function StartMenu({ account, apps, onOpen }: { account: UserAccount; apps: AppDefinition[]; onOpen: (app: AppDefinition) => void }) {
   const { logOff, setStage } = useOs.getState()

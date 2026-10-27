@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 const OsRoot = lazy(() => import('./os/OsRoot.tsx'))
 const ResumePage = lazy(() => import('./pages/ResumePage.tsx'))
 const NotFound = lazy(() => import('./pages/NotFound.tsx'))
+const CreditsPage = lazy(() => import('./pages/CreditsPage.tsx'))
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<OsRoot />} />
           <Route path="/resume" element={<ResumePage />} />
+          <Route path="/credits" element={<CreditsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
