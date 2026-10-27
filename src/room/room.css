@@ -1,0 +1,43 @@
+.room {
+  position: fixed;
+  inset: 0;
+  background: #0d0f1a;
+  font-family: Tahoma, 'Segoe UI', sans-serif;
+}
+
+.room__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  color: #c9d3ff;
+}
+
+.room__overlay {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.room__hint {
+  margin: 0;
+  color: #dfe6ff;
+  text-shadow: 0 1px 3px #000;
+}
+
+.room__actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.room__actions a {
+  color: #fff;
+}

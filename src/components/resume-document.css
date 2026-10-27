@@ -1,0 +1,54 @@
+.resume-doc {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #1a1a1a;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+.resume-doc h1 {
+  font-size: 2em;
+  margin: 0;
+}
+
+.resume-doc h2 {
+  font-size: 1.05em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid #bbb;
+  padding-bottom: 2px;
+  margin: 1.4em 0 0.5em;
+}
+
+.resume-doc p {
+  margin: 0.3em 0;
+}
+
+.resume-doc a {
+  color: #1a4fa0;
+}
+
+.resume-doc__title {
+  color: #444;
+}
+
+.resume-doc__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.resume-doc__job {
+  margin-bottom: 0.8em;
+}
+
+.resume-doc__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.resume-doc ul {
+  margin: 0.3em 0 0;
+  padding-left: 1.2em;
+}

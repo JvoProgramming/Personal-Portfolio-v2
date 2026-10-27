@@ -1,0 +1,53 @@
+.resume-page {
+  min-height: 100%;
+  background: #eef0f3;
+  padding: 16px;
+}
+
+.resume-page__bar {
+  max-width: 820px;
+  margin: 0 auto 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: system-ui, sans-serif;
+}
+
+.resume-page__bar a {
+  color: #1a4fa0;
+}
+
+.resume-page__bar button {
+  font: inherit;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #1a4fa0;
+  background: #1a4fa0;
+  color: #fff;
+  cursor: pointer;
+}
+
+.resume-page__paper {
+  max-width: 820px;
+  margin: 0 auto;
+  background: #fff;
+  padding: clamp(20px, 5vw, 56px);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
+}
+
+@media print {
+  .resume-page {
+    background: #fff;
+    padding: 0;
+  }
+
+  .resume-page__bar {
+    display: none;
+  }
+
+  .resume-page__paper {
+    box-shadow: none;
+    padding: 0;
+    max-width: none;
+  }
+}
