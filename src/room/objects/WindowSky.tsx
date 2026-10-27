@@ -79,7 +79,7 @@ export function WindowSky({ lighting }: { lighting: Lighting }) {
         <circleGeometry args={[isNight ? 0.18 : 0.25, 32]} />
         <meshBasicMaterial color={isNight ? '#f4f1d0' : lighting.phase === 'day' ? '#fffbe8' : '#ffb070'} toneMapped={false} />
       </mesh>
-      <mesh position={[SKY_X - 0.1, wy - 0.9, wz]} rotation={[0, -Math.PI / 2, 0]}>
+      <mesh position={[SKY_X - 0.1, wy - 0.62, wz]} rotation={[0, -Math.PI / 2, 0]}>
         <planeGeometry args={[6, 3]} />
         <meshBasicMaterial map={skyline} color={silhouette} transparent toneMapped={false} />
       </mesh>

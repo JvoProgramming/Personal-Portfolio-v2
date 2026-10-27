@@ -1,0 +1,60 @@
+.room-loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  background: radial-gradient(circle at 50% 42%, #1a1d33 0%, #05060c 60%);
+  color: #c9d3ff;
+  font: 15px Tahoma, 'Segoe UI', sans-serif;
+}
+
+.room-loading p {
+  margin: 0;
+}
+
+.room-loading__lamp {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe3a3 0%, #ffb44d 35%, rgb(255 180 77 / 0%) 70%);
+  animation: room-loading-glow 1.6s ease-in-out infinite;
+}
+
+.room-loading__actions {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.room-loading__actions button {
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 3px;
+  border: 1px solid #8c9bd6;
+  background: #eef1ff;
+  color: #10163a;
+  cursor: pointer;
+}
+
+.room-loading__actions a {
+  color: #fff;
+  font-size: 13px;
+}
+
+@keyframes room-loading-glow {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}

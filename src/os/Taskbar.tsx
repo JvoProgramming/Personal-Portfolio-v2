@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getApp } from '../apps/registry'
 import { LangSwitch } from '../components/LangSwitch'
-import { useAppTitle } from '../lib/i18n'
+import { useAppTitle, useT } from '../lib/i18n'
 import { useOs } from './store'
 
 function useClock() {
@@ -10,15 +10,16 @@ function useClock() {
     const t = window.setInterval(() => setNow(new Date()), 15_000)
     return () => window.clearInterval(t)
   }, [])
-  return now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  return { time: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }), date: now.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }
 }
 
 export function Taskbar({ activeId }: { activeId: string | null }) {
   const windows = useOs((s) => s.windows)
   const startOpen = useOs((s) => s.startOpen)
   const { setStartOpen, focusWindow, minimizeWindow } = useOs.getState()
-  const time = useClock()
+  const { time, date } = useClock()
   const appTitle = useAppTitle()
+  const t = useT()
 
   return (
     <footer className="taskbar">
@@ -56,7 +57,10 @@ export function Taskbar({ activeId }: { activeId: string | null }) {
         <a href="/resume" className="taskbar__tray-link" title="Plain resume page">
           📄<span className="visually-hidden">Resume</span>
         </a>
-        <time>{time}</time>
+        <span className="taskbar__tray-icon" title={t('tray.volume')} aria-hidden="true">
+          🔊
+        </span>
+        <time title={date}>{time}</time>
       </div>
     </footer>
   )

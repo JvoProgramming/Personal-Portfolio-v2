@@ -5,9 +5,13 @@ import { useAppTitle } from '../lib/i18n'
 import { useOs, type WindowState } from './store'
 
 const TASKBAR_HEIGHT = 40
+const MIN_W = 260
+const MIN_H = 160
+const EDGES = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] as const
+type Edge = (typeof EDGES)[number]
 
 export function Window({ win, active }: { win: WindowState; active: boolean }) {
-  const { focusWindow, closeWindow, minimizeWindow, toggleMaximize, moveWindow } = useOs.getState()
+  const { focusWindow, closeWindow, minimizeWindow, toggleMaximize, moveWindow, resizeWindow } = useOs.getState()
   const ref = useRef<HTMLDivElement>(null)
   const app = getApp(win.appId)
   const AppComponent = app?.component
@@ -38,6 +42,43 @@ export function Window({ win, active }: { win: WindowState; active: boolean }) {
     bar.addEventListener('pointermove', onMove)
     bar.addEventListener('pointerup', onUp)
     bar.addEventListener('pointercancel', onUp)
+  }
+
+  // Drag any edge or corner to resize, like XP.
+  const startResize = (edge: Edge) => (e: ReactPointerEvent<HTMLSpanElement>) => {
+    if (win.maximized || e.button !== 0) return
+    e.preventDefault()
+    e.stopPropagation()
+    const grip = e.currentTarget
+    grip.setPointerCapture(e.pointerId)
+    const start = { px: e.clientX, py: e.clientY, x: win.x, y: win.y, w: win.width, h: win.height }
+    const maxBottom = window.innerHeight - TASKBAR_HEIGHT
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - start.px
+      const dy = ev.clientY - start.py
+      let { x, y, w, h } = start
+      if (edge.includes('e')) w = Math.min(window.innerWidth - x, Math.max(MIN_W, start.w + dx))
+      if (edge.includes('s')) h = Math.min(maxBottom - y, Math.max(MIN_H, start.h + dy))
+      if (edge.includes('w')) {
+        w = Math.max(MIN_W, start.w - dx)
+        x = Math.max(0, start.x + start.w - w)
+        w = start.x + start.w - x
+      }
+      if (edge.includes('n')) {
+        h = Math.max(MIN_H, start.h - dy)
+        y = Math.max(0, start.y + start.h - h)
+        h = start.y + start.h - y
+      }
+      resizeWindow(win.id, { x, y, width: w, height: h })
+    }
+    const onUp = () => {
+      grip.removeEventListener('pointermove', onMove)
+      grip.removeEventListener('pointerup', onUp)
+      grip.removeEventListener('pointercancel', onUp)
+    }
+    grip.addEventListener('pointermove', onMove)
+    grip.addEventListener('pointerup', onUp)
+    grip.addEventListener('pointercancel', onUp)
   }
 
   const style = win.maximized
@@ -79,6 +120,8 @@ export function Window({ win, active }: { win: WindowState; active: boolean }) {
           </Suspense>
         </ErrorBoundary>
       </div>
+      {!win.maximized &&
+        EDGES.map((edge) => <span key={edge} className={`os-window__grip os-window__grip--${edge}`} aria-hidden="true" onPointerDown={startResize(edge)} />)}
     </div>
   )
 }

@@ -8,6 +8,8 @@ const en = {
   'lang.switchLabel': 'Switch language to Vietnamese',
   'room.loading': "Loading Johnny's room…",
   'room.hint': 'Click the computer to turn it on',
+  'room.hintTouch': 'Tap the computer to turn it on. Drag to look around.',
+  'welcome.visitRoom': 'Visit my room in 3D',
   'room.skipDesktop': 'Skip to desktop',
   'room.skipResume': 'Skip to resume →',
   'room.close': 'Close',
@@ -52,6 +54,14 @@ const en = {
   'obj.tennis': 'Tennis gear',
   'obj.window': 'Window: the sky matches the time in LA',
   'obj.poster': 'Poster',
+  'ctx.refresh': 'Refresh',
+  'ctx.openResume': 'Open Resume',
+  'ctx.wallpaper': 'Change wallpaper…',
+  'balloon.title': 'Welcome to Johnny XP',
+  'balloon.body': 'Double-click an icon to open it. Right-click the desktop for more.',
+  'balloon.bodyTouch': 'Tap an icon to open it.',
+  'balloon.close': 'Close notification',
+  'tray.volume': 'Volume',
 }
 
 type Key = keyof typeof en
@@ -61,6 +71,8 @@ const vi: Partial<Record<Key, string>> = {
   'lang.switchLabel': 'Chuyển sang tiếng Anh',
   'room.loading': 'Đang tải phòng của Johnny…',
   'room.hint': 'Nhấn vào máy tính để bật',
+  'room.hintTouch': 'Chạm vào máy tính để bật. Kéo để nhìn xung quanh.',
+  'welcome.visitRoom': 'Xem phòng 3D của mình',
   'room.skipDesktop': 'Vào màn hình chính',
   'room.skipResume': 'Xem CV →',
   'room.close': 'Đóng',
@@ -100,6 +112,14 @@ const vi: Partial<Record<Key, string>> = {
   'obj.tennis': 'Đồ tennis',
   'obj.window': 'Cửa sổ: bầu trời theo giờ Los Angeles',
   'obj.poster': 'Áp phích',
+  'ctx.refresh': 'Làm mới',
+  'ctx.openResume': 'Mở CV',
+  'ctx.wallpaper': 'Đổi hình nền…',
+  'balloon.title': 'Chào mừng đến Johnny XP',
+  'balloon.body': 'Nhấn đúp vào biểu tượng để mở. Nhấn chuột phải vào màn hình để xem thêm.',
+  'balloon.bodyTouch': 'Chạm vào biểu tượng để mở.',
+  'balloon.close': 'Đóng thông báo',
+  'tray.volume': 'Âm lượng',
 }
 
 export type TKey = Key

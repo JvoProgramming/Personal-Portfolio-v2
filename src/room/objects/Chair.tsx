@@ -1,3 +1,4 @@
+import { RoundedBox } from '@react-three/drei'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { useRef } from 'react'
 import type * as THREE from 'three'
@@ -38,8 +39,9 @@ export function Chair() {
   }
 
   const fabric = '#2d2f3a'
+  // Pushed back from the desk and turned toward you, so it doesn't hide the monitor.
   return (
-    <group position={[0.15, 0, -1.3]}>
+    <group position={[0.42, 0, -1.02]}>
       {/* Star base and wheels */}
       {[0, 1, 2, 3, 4].map((i) => {
         const a = (i / 5) * Math.PI * 2
@@ -61,15 +63,13 @@ export function Chair() {
         <meshStandardMaterial color="#888" metalness={0.8} roughness={0.25} />
       </mesh>
       {/* Spinning top part */}
-      <group ref={spinner} rotation={[0, 0.4, 0]} {...props} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}>
-        <mesh position={[0, 0.47, 0]} castShadow receiveShadow>
-          <boxGeometry args={[0.48, 0.08, 0.46]} />
+      <group ref={spinner} rotation={[0, -0.75, 0]} {...props} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}>
+        <RoundedBox args={[0.48, 0.08, 0.46]} radius={0.035} smoothness={3} position={[0, 0.47, 0]} castShadow receiveShadow>
           <meshStandardMaterial color={fabric} roughness={0.9} />
-        </mesh>
-        <mesh position={[0, 0.8, 0.23]} rotation={[-0.12, 0, 0]} castShadow>
-          <boxGeometry args={[0.46, 0.56, 0.07]} />
+        </RoundedBox>
+        <RoundedBox args={[0.46, 0.56, 0.07]} radius={0.03} smoothness={3} position={[0, 0.8, 0.23]} rotation={[-0.12, 0, 0]} castShadow>
           <meshStandardMaterial color={fabric} roughness={0.9} />
-        </mesh>
+        </RoundedBox>
         <mesh position={[0, 0.58, 0.22]} castShadow>
           <boxGeometry args={[0.06, 0.16, 0.04]} />
           <meshStandardMaterial color="#1b1b1f" />

@@ -5,14 +5,6 @@
   font-family: Tahoma, 'Segoe UI', sans-serif;
 }
 
-.room__loading {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  color: #c9d3ff;
-}
-
 .room__top {
   position: absolute;
   top: 16px;
@@ -44,11 +36,10 @@
   background: rgb(8 12 30 / 70%);
   color: #f1f4ff;
   font-size: 14px;
-  white-space: nowrap;
   pointer-events: none;
+  width: max-content;
   max-width: calc(100% - 32px);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
 }
 
 .room__actions {
