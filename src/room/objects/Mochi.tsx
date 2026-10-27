@@ -14,11 +14,14 @@ const MOUTH = 0.3
 type Task = { kind: 'walk'; to: THREE.Vector3 } | { kind: 'pickup' } | { kind: 'drop' } | { kind: 'lie' }
 
 
-// Mochi's shapes are baked once from smooth blended primitives (see sdf.ts), with tan fur on top
-// and the cream "urajiro" markings a Shiba has on her muzzle, cheeks, chest, belly and socks.
-const TAN = new THREE.Color('#d9934f')
-const CREAM_C = new THREE.Color('#f7ead6')
-const PINK = new THREE.Color('#e9b9a6')
+// Mochi is a Chihuahua. Her shapes are baked once from smooth blended primitives (see sdf.ts):
+// an apple-dome head with big upright ears and big eyes, a short muzzle, a slim body,
+// thin legs and a sickle tail. Fawn coat with a cream chest and belly.
+const TAN = new THREE.Color('#d39a5e')
+const CREAM_C = new THREE.Color('#f6e8d2')
+const PINK = new THREE.Color('#eab3a2')
+/** Chihuahuas are small; the whole dog is modeled at this scale. */
+const SIZE = 0.78
 
 let shapes: ReturnType<typeof buildShapes> | null = null
 function getShapes() {
@@ -27,74 +30,71 @@ function getShapes() {
 }
 
 function buildShapes() {
+  const ear = (s: number) => scaled([1, 1, 0.42], cone([s * 0.04, 0.045, -0.012 / 0.42], [s * 0.098, 0.14, -0.002 / 0.42], 0.036, 0.007))
   const head = bake(
     union(
-      0.03,
-      ellipsoid([0, 0.012, 0], [0.074, 0.068, 0.07]),
-      sphere([-0.04, -0.026, 0.018], 0.036),
-      sphere([0.04, -0.026, 0.018], 0.036),
-      cone([0, -0.018, 0.04], [0, -0.03, 0.112], 0.04, 0.024),
-      union(
-        0.012,
-        scaled([1, 1, 0.55], cone([-0.04, 0.05, -0.004], [-0.056, 0.124, 0.002], 0.03, 0.006)),
-        scaled([1, 1, 0.55], cone([0.04, 0.05, -0.004], [0.056, 0.124, 0.002], 0.03, 0.006)),
-      ),
+      0.022,
+      sphere([0, 0.016, 0], 0.074),
+      sphere([-0.032, -0.022, 0.032], 0.03),
+      sphere([0.032, -0.022, 0.032], 0.03),
+      cone([0, -0.024, 0.048], [0, -0.034, 0.096], 0.03, 0.017),
+      union(0.015, ear(-1), ear(1)),
     ),
     {
-      center: [0, 0.02, 0.02],
-      half: 0.13,
-      resolution: 60,
+      center: [0, 0.04, 0.01],
+      half: 0.15,
+      resolution: 64,
       color: (p) => {
-        // Inner ear.
-        if (p.y > 0.065 && p.z > 0.005 && Math.abs(Math.abs(p.x) - 0.048) < 0.014) return PINK.clone()
-        // Eyebrow dots.
-        const brow = 1 - Math.hypot(Math.abs(p.x) - 0.03, (p.y - 0.044) * 1.4, p.z - 0.055) / 0.009
-        // Cream muzzle and cheeks, tan forehead and back of the head.
-        const lower = (0.005 - p.y) / 0.025 + (p.z - 0.01) / 0.05
-        return mixColor(TAN, CREAM_C, Math.max(lower, brow * 1.5))
+        // Pink inside the big ears (their front faces).
+        const earSide = Math.abs(p.x) > 0.045 && p.y > 0.06
+        if (earSide && p.z > -0.004) return mixColor(TAN, PINK, (p.y - 0.06) / 0.02)
+        // Lighter fawn on the muzzle, cream under the chin.
+        const chin = (-0.035 - p.y) / 0.015
+        const muzzle = (p.z - 0.06) / 0.03
+        return mixColor(TAN, CREAM_C, Math.max(chin, muzzle * 0.45))
       },
     },
   )
   const body = bake(
     union(
-      0.045,
-      cone([0, 0.2, -0.085], [0, 0.21, 0.06], 0.072, 0.078),
-      sphere([0, 0.185, 0.11], 0.07),
-      cone([0, 0.21, 0.12], [0, 0.28, 0.17], 0.058, 0.05),
-      sphere([-0.032, 0.19, -0.085], 0.064),
-      sphere([0.032, 0.19, -0.085], 0.064),
+      0.04,
+      cone([0, 0.2, -0.08], [0, 0.21, 0.06], 0.054, 0.06),
+      sphere([0, 0.19, 0.09], 0.056),
+      cone([0, 0.21, 0.1], [0, 0.28, 0.155], 0.042, 0.035),
+      sphere([-0.026, 0.195, -0.08], 0.05),
+      sphere([0.026, 0.195, -0.08], 0.05),
     ),
     {
-      center: [0, 0.2, 0],
-      half: 0.2,
+      center: [0, 0.2, 0.02],
+      half: 0.18,
       resolution: 64,
-      color: (p) => mixColor(TAN, CREAM_C, Math.max((0.175 - p.y) / 0.03, (p.z - 0.1) / 0.04 + (0.24 - p.y) / 0.04 - 1)),
+      color: (p) => mixColor(TAN, CREAM_C, Math.max((0.17 - p.y) / 0.025, (p.z - 0.09) / 0.03 + (0.23 - p.y) / 0.04 - 1)),
     },
   )
-  const leg = bake(union(0.02, cone([0, 0, 0], [0, -0.09, 0], 0.033, 0.021), cone([0, -0.09, 0], [0, -0.13, 0.008], 0.021, 0.022), ellipsoid([0, -0.136, 0.018], [0.026, 0.016, 0.033])), {
+  const leg = bake(union(0.015, cone([0, 0, 0], [0, -0.09, 0], 0.024, 0.014), cone([0, -0.09, 0], [0, -0.132, 0.006], 0.014, 0.013), ellipsoid([0, -0.138, 0.014], [0.018, 0.012, 0.026])), {
     center: [0, -0.07, 0.01],
     half: 0.09,
     resolution: 40,
-    color: (p) => mixColor(TAN, CREAM_C, (-0.07 - p.y) / 0.03),
+    color: (p) => mixColor(TAN, CREAM_C, (-0.11 - p.y) / 0.02),
   })
   const tail = bake(
     chain(
       [
         [0, 0, 0],
-        [0, 0.06, -0.035],
-        [0, 0.115, -0.005],
-        [0.01, 0.105, 0.055],
-        [0.03, 0.06, 0.05],
+        [0, 0.045, -0.035],
+        [0, 0.095, -0.03],
+        [0, 0.125, 0.0],
+        [0, 0.13, 0.03],
       ],
-      0.03,
-      0.017,
-      0.02,
+      0.016,
+      0.006,
+      0.012,
     ),
     {
-      center: [0.01, 0.05, 0.005],
-      half: 0.1,
-      resolution: 44,
-      color: (p) => mixColor(TAN, CREAM_C, (p.z + 0.01) / 0.05 - (p.y - 0.06) / 0.04),
+      center: [0, 0.06, -0.005],
+      half: 0.09,
+      resolution: 40,
+      color: (p) => mixColor(TAN, CREAM_C, (p.z + 0.02) / 0.03 - (p.y - 0.06) / 0.04 - 0.5),
     },
   )
   const bone = bake(
@@ -157,7 +157,7 @@ function DogBed() {
   )
 }
 
-/** Mochi naps in her bed. Click her (or the bed or bone) and she fetches her bone, or drops it off. */
+/** Mochi (a Chihuahua) naps in her bed. Click her (or the bed or bone) and she fetches her bone, or drops it off. */
 export function Mochi() {
   const calls = useRoom((s) => s.mochiCalls)
   const callMochi = useRoom((s) => s.callMochi)
@@ -270,7 +270,7 @@ export function Mochi() {
         sheenColor: new THREE.Color('#fff0d8'),
         sheenRoughness: 0.5,
         normalMap: strandNormal(2, 3600),
-        normalScale: new THREE.Vector2(0.7, 0.7),
+        normalScale: new THREE.Vector2(0.35, 0.35),
       }),
     [],
   )
@@ -289,36 +289,38 @@ export function Mochi() {
 
       {/* Mochi */}
       <group ref={dog} {...props}>
+        <group scale={SIZE}>
         <group ref={body}>
           <mesh geometry={parts.body} material={fur} castShadow receiveShadow />
           {/* Red collar with a little gold tag */}
-          <mesh position={[0, 0.245, 0.15]} rotation={[1.0, 0, 0]}>
-            <torusGeometry args={[0.052, 0.008, 10, 32]} />
+          <mesh position={[0, 0.25, 0.135]} rotation={[1.0, 0, 0]}>
+            <torusGeometry args={[0.04, 0.007, 10, 32]} />
             <meshStandardMaterial color="#c0392b" roughness={0.5} />
           </mesh>
-          <mesh position={[0, 0.205, 0.185]} rotation={[0.55, 0, 0]}>
+          <mesh position={[0, 0.217, 0.162]} rotation={[0.55, 0, 0]}>
             <cylinderGeometry args={[0.012, 0.012, 0.003, 16]} />
             <meshStandardMaterial color="#e3b341" metalness={0.9} roughness={0.25} />
           </mesh>
           <group ref={head} position={[0, 0.29, 0.17]}>
             <mesh geometry={parts.head} material={fur} castShadow />
             {/* Nose, eyes with a catch-light, and a smiling mouth */}
-            <mesh position={[0, -0.018, 0.134]} scale={[1.25, 0.85, 0.9]} material={glossy}>
-              <sphereGeometry args={[0.013, 16, 12]} />
+            <mesh position={[0, -0.03, 0.111]} scale={[1.2, 0.85, 0.9]} material={glossy}>
+              <sphereGeometry args={[0.0105, 16, 12]} />
             </mesh>
+            {/* Big, round, slightly bulging Chihuahua eyes with a catch-light */}
             {[-1, 1].map((x) => (
-              <group key={x} position={[x * 0.032, 0.022, 0.062]} rotation={[0, x * 0.35, 0]}>
-                <mesh scale={[1, 1.1, 0.7]} material={glossy}>
-                  <sphereGeometry args={[0.0105, 16, 12]} />
+              <group key={x} position={[x * 0.035, 0.006, 0.058]} rotation={[0, x * 0.5, 0]}>
+                <mesh scale={[1, 1, 0.75]} material={glossy}>
+                  <sphereGeometry args={[0.0165, 20, 16]} />
                 </mesh>
-                <mesh position={[0.003, 0.004, 0.007]}>
-                  <sphereGeometry args={[0.0028, 8, 6]} />
+                <mesh position={[x * -0.004, 0.006, 0.011]}>
+                  <sphereGeometry args={[0.0038, 8, 6]} />
                   <meshBasicMaterial color="#ffffff" />
                 </mesh>
               </group>
             ))}
-            <mesh position={[0, -0.045, 0.104]} rotation={[0.25, 0, Math.PI]}>
-              <torusGeometry args={[0.014, 0.0022, 6, 16, Math.PI]} />
+            <mesh position={[0, -0.05, 0.088]} rotation={[0.3, 0, Math.PI]}>
+              <torusGeometry args={[0.011, 0.0018, 6, 16, Math.PI]} />
               <meshStandardMaterial color="#3a2418" />
             </mesh>
             <group ref={carriedBone} position={[0, -0.05, MOUTH - 0.17]} visible={false}>
@@ -345,6 +347,7 @@ export function Mochi() {
             <mesh geometry={parts.leg} material={fur} castShadow />
           </group>
         ))}
+        </group>
       </group>
     </group>
   )
