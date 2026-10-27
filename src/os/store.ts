@@ -35,7 +35,7 @@ interface OsState {
   startOpen: boolean
   wallpaperOverride: string | null
   /** An app to open right after login, e.g. the Cookbook when someone clicks the food in the room. */
-  pendingApp: string | null
+  pendingApp: { appId: string; options?: OpenAppOptions } | null
   setStage: (stage: Stage) => void
   logIn: (user: UserId) => void
   logOff: () => void
@@ -47,7 +47,7 @@ interface OsState {
   toggleMaximize: (id: string) => void
   moveWindow: (id: string, x: number, y: number) => void
   setWallpaper: (url: string | null) => void
-  setPendingApp: (appId: string | null) => void
+  setPendingApp: (pending: { appId: string; options?: OpenAppOptions } | null) => void
 }
 
 let cascade = 0

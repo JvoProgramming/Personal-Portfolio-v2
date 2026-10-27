@@ -110,7 +110,7 @@ export function GameBoy() {
 export function Food() {
   const powerOn = useRoom((s) => s.powerOn)
   const { props } = useInteractive('obj.food', () => {
-    useOs.getState().setPendingApp('cookbook')
+    useOs.getState().setPendingApp({ appId: 'cookbook' })
     powerOn()
   })
   const x = 2.4
@@ -230,7 +230,11 @@ export function TennisGear() {
 
 /** Plastic guitar controller leaning against the wall next to the desk. */
 export function GuitarController() {
-  const { props } = useInteractive('obj.guitar')
+  const powerOn = useRoom((s) => s.powerOn)
+  const { props } = useInteractive('obj.guitar', () => {
+    useOs.getState().setPendingApp({ appId: 'arcade', options: { props: { game: 'rhythm' } } })
+    powerOn()
+  })
   const frets = ['#2ecc40', '#ff4136', '#ffdc00', '#0074d9', '#ff851b']
   return (
     <group position={[1.35, 0.02, -ROOM.halfD + 0.2]} rotation={[0.18, -0.3, 0.12]} {...props}>

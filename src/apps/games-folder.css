@@ -1,0 +1,29 @@
+.games-folder__detail {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex: 1;
+  overflow: auto;
+}
+.games-folder__detail h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+.games-folder__icon {
+  font-size: 56px;
+  line-height: 1;
+}
+.games-folder__error {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  width: min(340px, 90%);
+  z-index: 5;
+}
+.games-folder__error-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+.games-folder { position: relative; }

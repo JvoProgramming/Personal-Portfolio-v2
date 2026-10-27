@@ -19,6 +19,7 @@ Add `?no3d` to the URL to skip the 3D room, or `?time=19.5` to preview the room 
 | --- | --- |
 | `src/os/` | The XP shell: boot screen, welcome screen, desktop, windows, taskbar, Start menu, and the Zustand store |
 | `src/apps/` | One file per desktop app. `registry.ts` lists every app, its icon, and which accounts see it |
+| `src/apps/games/` | Canvas mini games for the Arcade (Rock Legend, Bone Fetch, Match Point). High scores live in localStorage |
 | `src/content/` | All the text: resume, projects, recipes, photos, wiki page. `blog/` and `garden/` hold Markdown posts |
 | `src/room/` | The 3D room, lazy-loaded. If it fails, the site falls back to the OS. `objects/` has one file per piece of furniture; `time.ts` sets the sky from LA time; `textures.ts` draws posters and photos in code |
 | `src/lib/i18n.ts` | English and Vietnamese text for the room, welcome screen, Start menu and app names |
