@@ -42,7 +42,7 @@ export function Dust({ lighting }: { lighting: Lighting }) {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
-      <pointsMaterial size={0.009} color="#fff4d6" transparent opacity={0.5 * day} depthWrite={false} sizeAttenuation />
+      <pointsMaterial size={0.007} color="#fff4d6" transparent opacity={0.3 * day} depthWrite={false} sizeAttenuation />
     </points>
   )
 }

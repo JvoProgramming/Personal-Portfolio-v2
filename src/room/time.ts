@@ -23,7 +23,7 @@ export interface Lighting {
 }
 
 /** Current time as a UTC Date. `?time=18.5` in the URL pretends it's 6:30pm in LA (for testing). */
-function now(): Date {
+export function now(): Date {
   const param = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('time') : null
   const d = new Date()
   if (param !== null && !Number.isNaN(Number(param))) {
@@ -95,4 +95,11 @@ export function getLighting(): Lighting {
     ambient: from.ambient + (to.ambient - from.ambient) * t,
     label,
   }
+}
+
+/** Hours (0-24, fractional) on the clock in LA right now. */
+export function laHours(d: Date = now()): number {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', hourCycle: 'h23', hour: 'numeric', minute: 'numeric', second: 'numeric' }).formatToParts(d)
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0)
+  return get('hour') + get('minute') / 60 + get('second') / 3600
 }

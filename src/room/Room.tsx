@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Buzzer, Dust } from './objects/Ambience'
 import { Chair } from './objects/Chair'
+import { Curtains, FairyLights, Plant, WallClock } from './objects/Cozy'
 import { Food, GameBoy, GuitarController, Posters, Shelf, TennisGear } from './objects/Decor'
 import { SCREEN_POS } from './layout'
 import { Computer, Desk } from './objects/Desk'
@@ -68,6 +69,10 @@ function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: ()
       <TennisGear />
       <GuitarController />
       <Mochi />
+      <FairyLights lighting={lighting} />
+      <WallClock />
+      <Plant />
+      <Curtains />
       <Dust lighting={lighting} />
       <Buzzer lighting={lighting} />
       {effects && (

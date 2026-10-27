@@ -38,23 +38,20 @@ export function Lamp() {
         </mesh>
       </group>
       <primitive object={target} position={[x + 0.35, y, z + 0.25]} />
-      {lampOn && (
-        <>
-          <spotLight
-            position={[x + 0.2, y + 0.48, z + 0.1]}
-            target={target}
-            angle={1.0}
-            penumbra={0.7}
-            intensity={6}
-            distance={4}
-            color="#ffc777"
-            castShadow
-            shadow-mapSize={[512, 512]}
-            shadow-bias={-0.001}
-          />
-          <pointLight position={[x + 0.2, y + 0.55, z + 0.1]} intensity={1.2} distance={3.5} color="#ffbe6b" />
-        </>
-      )}
+      {/* Lights stay mounted (intensity 0 when off), so switching doesn't recompile every material. */}
+      <spotLight
+        position={[x + 0.2, y + 0.48, z + 0.1]}
+        target={target}
+        angle={1.0}
+        penumbra={0.7}
+        intensity={lampOn ? 6 : 0}
+        distance={4}
+        color="#ffc777"
+        castShadow
+        shadow-mapSize={[512, 512]}
+        shadow-bias={-0.001}
+      />
+      <pointLight position={[x + 0.2, y + 0.55, z + 0.1]} intensity={lampOn ? 1.2 : 0} distance={3.5} color="#ffbe6b" />
     </group>
   )
 }
