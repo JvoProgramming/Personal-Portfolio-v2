@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react'
 import { getApp } from '../apps/registry'
 import { ErrorBoundary } from '../components/ErrorBoundary'
+import { useAppTitle } from '../lib/i18n'
 import { useOs, type WindowState } from './store'
 
 const TASKBAR_HEIGHT = 40
@@ -10,6 +11,7 @@ export function Window({ win, active }: { win: WindowState; active: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   const app = getApp(win.appId)
   const AppComponent = app?.component
+  const title = useAppTitle()(win.appId, win.title)
 
   // Move keyboard focus into a window when it opens.
   useEffect(() => {
@@ -48,14 +50,14 @@ export function Window({ win, active }: { win: WindowState; active: boolean }) {
       className={`window os-window${active ? '' : ' is-inactive'}${win.maximized ? ' is-maximized' : ''}`}
       style={{ ...style, display: win.minimized ? 'none' : undefined }}
       role="dialog"
-      aria-label={win.title}
+      aria-label={title}
       tabIndex={-1}
       onPointerDownCapture={() => focusWindow(win.id)}
       onFocus={() => focusWindow(win.id)}
     >
       <div className="title-bar" onPointerDown={startDrag} onDoubleClick={() => toggleMaximize(win.id)}>
         <div className="title-bar-text">
-          <span aria-hidden="true">{app?.icon}</span> {win.title}
+          <span aria-hidden="true">{app?.icon}</span> {title}
         </div>
         <div className="title-bar-controls">
           <button type="button" aria-label="Minimize" onClick={() => minimizeWindow(win.id)} />

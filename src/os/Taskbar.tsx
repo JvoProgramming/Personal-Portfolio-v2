@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getApp } from '../apps/registry'
+import { LangSwitch } from '../components/LangSwitch'
+import { useAppTitle } from '../lib/i18n'
 import { useOs } from './store'
 
 function useClock() {
@@ -16,6 +18,7 @@ export function Taskbar({ activeId }: { activeId: string | null }) {
   const startOpen = useOs((s) => s.startOpen)
   const { setStartOpen, focusWindow, minimizeWindow } = useOs.getState()
   const time = useClock()
+  const appTitle = useAppTitle()
 
   return (
     <footer className="taskbar">
@@ -43,12 +46,13 @@ export function Taskbar({ activeId }: { activeId: string | null }) {
               onClick={() => (w.id === activeId ? minimizeWindow(w.id) : focusWindow(w.id))}
             >
               <span aria-hidden="true">{getApp(w.appId)?.icon}</span>
-              <span className="taskbar__window-title">{w.title}</span>
+              <span className="taskbar__window-title">{appTitle(w.appId, w.title)}</span>
             </button>
           </li>
         ))}
       </ul>
       <div className="taskbar__tray">
+        <LangSwitch className="taskbar__lang" />
         <a href="/resume" className="taskbar__tray-link" title="Plain resume page">
           📄<span className="visually-hidden">Resume</span>
         </a>
