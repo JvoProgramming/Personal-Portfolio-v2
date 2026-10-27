@@ -21,14 +21,24 @@ const HOME = new THREE.Vector3(-0.55, 1.55, 2.25)
 const LOOK = new THREE.Vector3(0.45, 0.95, -1.8)
 
 function CameraRig({ onEnter }: { onEnter: () => void }) {
-  const { camera, pointer } = useThree()
+  const { camera, pointer, size } = useThree()
   const poweringOn = useRoom((s) => s.poweringOn)
   const arrived = useRef(false)
   const goal = useRef(new THREE.Vector3())
   const look = useRef(LOOK.clone())
+  const lookGoal = useRef(LOOK.clone())
   const timer = useRef(0)
+  const aspect = size.width / size.height
+  // Phones held upright see less of the room, so widen the lens and let a drag pan across it.
+  const portrait = aspect < 1
+  const fov = aspect < 0.8 ? 72 : aspect < 1.3 ? 62 : 55
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
+    const cam = state.camera as THREE.PerspectiveCamera
+    if (cam.fov !== fov) {
+      cam.fov = fov
+      cam.updateProjectionMatrix()
+    }
     if (poweringOn) {
       // Short pause so you see the screen light up, then fly into it.
       timer.current += delta
@@ -42,8 +52,10 @@ function CameraRig({ onEnter }: { onEnter: () => void }) {
         }
       }
     } else {
-      goal.current.set(HOME.x + pointer.x * 0.35, HOME.y + pointer.y * 0.12, HOME.z)
+      goal.current.set(HOME.x + pointer.x * (portrait ? 0.15 : 0.35), HOME.y + pointer.y * 0.12, HOME.z)
       camera.position.lerp(goal.current, 1 - Math.exp(-delta * 2))
+      lookGoal.current.set(LOOK.x + (portrait ? pointer.x * 1.4 : 0), LOOK.y, LOOK.z)
+      look.current.lerp(lookGoal.current, 1 - Math.exp(-delta * 2.5))
     }
     camera.lookAt(look.current)
   })
@@ -97,6 +109,8 @@ export default function Room({ onEnter, lighting }: { onEnter: () => void; light
   return (
     <Canvas
       shadows
+      // No tone mapping, so the room looks the same with or without the post effects.
+      flat
       camera={{ position: HOME.toArray(), fov: 55, near: 0.05, far: 40 }}
       dpr={dpr}
       onPointerMissed={() => setHover(null)}

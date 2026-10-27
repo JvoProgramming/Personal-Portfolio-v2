@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { LangSwitch } from '../components/LangSwitch'
+import { isCoarsePointer } from '../lib/env'
 import { useT } from '../lib/i18n'
 import { useOs } from '../os/store'
 import { useRoom } from './roomStore'
@@ -89,7 +90,7 @@ export default function RoomGate() {
             <LangSwitch className="room__lang" />
           </div>
           <div className="room__label" aria-live="polite">
-            {hover ?? t('room.hint')}
+            {hover ?? t(isCoarsePointer() ? 'room.hintTouch' : 'room.hint')}
           </div>
           <div className="room__actions">
             <button type="button" onClick={enterOs}>

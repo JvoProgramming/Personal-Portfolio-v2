@@ -1104,6 +1104,7 @@ body {
 }
 
 .welcome .welcome__lang,
+.welcome .welcome__room,
 .desktop .taskbar__lang {
   all: unset;
   cursor: pointer;
@@ -1115,6 +1116,8 @@ body {
 
 .welcome .welcome__lang:hover,
 .welcome .welcome__lang:focus-visible,
+.welcome .welcome__room:hover,
+.welcome .welcome__room:focus-visible,
 .desktop .taskbar__lang:hover,
 .desktop .taskbar__lang:focus-visible {
   background: rgb(255 255 255 / 20%);

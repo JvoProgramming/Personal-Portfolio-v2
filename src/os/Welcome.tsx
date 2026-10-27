@@ -1,4 +1,5 @@
 import { LangSwitch } from '../components/LangSwitch'
+import { canVisitRoom } from '../lib/env'
 import { useT, type TKey } from '../lib/i18n'
 import { useOs } from './store'
 import { USERS } from './users'
@@ -40,6 +41,11 @@ export function Welcome() {
           <span aria-hidden="true">⏻</span> {t('welcome.turnOff')}
         </button>
         <div className="welcome__links">
+          {canVisitRoom() && (
+            <button type="button" className="welcome__room" onClick={() => setStage('room')}>
+              <span aria-hidden="true">🛏️</span> {t('welcome.visitRoom')}
+            </button>
+          )}
           <LangSwitch className="welcome__lang" />
           <a className="skip-link" href="/resume">
             {t('welcome.skipResume')}
