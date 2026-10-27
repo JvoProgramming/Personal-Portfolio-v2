@@ -54,6 +54,14 @@ const en = {
   'obj.tennis': 'Tennis gear',
   'obj.window': 'Window: the sky matches the time in LA',
   'obj.poster': 'Poster',
+  'ctx.refresh': 'Refresh',
+  'ctx.openResume': 'Open Resume',
+  'ctx.wallpaper': 'Change wallpaper…',
+  'balloon.title': 'Welcome to Johnny XP',
+  'balloon.body': 'Double-click an icon to open it. Right-click the desktop for more.',
+  'balloon.bodyTouch': 'Tap an icon to open it.',
+  'balloon.close': 'Close notification',
+  'tray.volume': 'Volume',
 }
 
 type Key = keyof typeof en
@@ -104,6 +112,14 @@ const vi: Partial<Record<Key, string>> = {
   'obj.tennis': 'Đồ tennis',
   'obj.window': 'Cửa sổ: bầu trời theo giờ Los Angeles',
   'obj.poster': 'Áp phích',
+  'ctx.refresh': 'Làm mới',
+  'ctx.openResume': 'Mở CV',
+  'ctx.wallpaper': 'Đổi hình nền…',
+  'balloon.title': 'Chào mừng đến Johnny XP',
+  'balloon.body': 'Nhấn đúp vào biểu tượng để mở. Nhấn chuột phải vào màn hình để xem thêm.',
+  'balloon.bodyTouch': 'Chạm vào biểu tượng để mở.',
+  'balloon.close': 'Đóng thông báo',
+  'tray.volume': 'Âm lượng',
 }
 
 export type TKey = Key

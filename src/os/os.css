@@ -1128,3 +1128,230 @@ body {
     display: none;
   }
 }
+
+/* ---------- Window polish: title font, resize grips, open animation ---------- */
+.os-window .title-bar-text {
+  font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, Verdana, sans-serif;
+  font-size: 13px;
+  text-shadow: 1px 1px #0f1089;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-window:not(.is-maximized) {
+  animation: os-window-open 140ms ease-out;
+}
+
+@keyframes os-window-open {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.os-window__grip {
+  position: absolute;
+  z-index: 2;
+  touch-action: none;
+}
+
+.os-window__grip--n,
+.os-window__grip--s {
+  left: 8px;
+  right: 8px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.os-window__grip--e,
+.os-window__grip--w {
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.os-window__grip--n {
+  top: -3px;
+}
+
+.os-window__grip--s {
+  bottom: -3px;
+}
+
+.os-window__grip--e {
+  right: -3px;
+}
+
+.os-window__grip--w {
+  left: -3px;
+}
+
+.os-window__grip--ne,
+.os-window__grip--nw,
+.os-window__grip--se,
+.os-window__grip--sw {
+  width: 12px;
+  height: 12px;
+}
+
+.os-window__grip--ne {
+  top: -3px;
+  right: -3px;
+  cursor: nesw-resize;
+}
+
+.os-window__grip--sw {
+  bottom: -3px;
+  left: -3px;
+  cursor: nesw-resize;
+}
+
+.os-window__grip--nw {
+  top: -3px;
+  left: -3px;
+  cursor: nwse-resize;
+}
+
+.os-window__grip--se {
+  bottom: -3px;
+  right: -3px;
+  cursor: nwse-resize;
+}
+
+@media (pointer: coarse) {
+  .os-window__grip--n,
+  .os-window__grip--s {
+    height: 14px;
+  }
+
+  .os-window__grip--e,
+  .os-window__grip--w {
+    width: 14px;
+  }
+
+  .os-window__grip--ne,
+  .os-window__grip--nw,
+  .os-window__grip--se,
+  .os-window__grip--sw {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* ---------- Right-click menu ---------- */
+.context-menu {
+  position: fixed;
+  z-index: 100002;
+  min-width: 190px;
+  margin: 0;
+  padding: 2px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #aca899;
+  box-shadow: 2px 2px 3px rgb(0 0 0 / 35%);
+  font-size: 12px;
+}
+
+.context-menu button,
+.context-menu a {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 3px 18px 3px 4px;
+  color: #000;
+  cursor: default;
+}
+
+.context-menu button:hover,
+.context-menu button:focus,
+.context-menu a:hover,
+.context-menu a:focus {
+  background: #316ac5;
+  color: #fff;
+}
+
+.context-menu__icon {
+  width: 18px;
+  text-align: center;
+}
+
+.context-menu__sep {
+  height: 1px;
+  margin: 3px 2px;
+  background: #aca899;
+}
+
+/* ---------- Tray balloon ---------- */
+.balloon {
+  position: absolute;
+  right: 12px;
+  bottom: calc(var(--taskbar-h) + 14px);
+  z-index: 100001;
+  width: min(300px, calc(100vw - 24px));
+  padding: 10px 28px 10px 12px;
+  background: #ffffe1;
+  color: #000;
+  border: 1px solid #000;
+  border-radius: 8px;
+  box-shadow: 2px 3px 6px rgb(0 0 0 / 35%);
+  font-size: 12px;
+  animation: balloon-in 300ms ease-out;
+}
+
+.balloon::after {
+  content: '';
+  position: absolute;
+  right: 40px;
+  bottom: -12px;
+  border: 6px solid transparent;
+  border-top: 6px solid #ffffe1;
+  filter: drop-shadow(0 1px 0 #000);
+}
+
+.balloon strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.balloon p {
+  margin: 0;
+}
+
+.balloon__close {
+  all: unset;
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 16px;
+  height: 16px;
+  line-height: 14px;
+  text-align: center;
+  font-size: 14px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.balloon__close:hover,
+.balloon__close:focus-visible {
+  border-color: #c66;
+  background: #e88;
+  color: #fff;
+}
+
+@keyframes balloon-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.taskbar__tray-icon {
+  font-size: 13px;
+  cursor: default;
+}

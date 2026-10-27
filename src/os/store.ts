@@ -46,6 +46,7 @@ interface OsState {
   minimizeWindow: (id: string) => void
   toggleMaximize: (id: string) => void
   moveWindow: (id: string, x: number, y: number) => void
+  resizeWindow: (id: string, rect: { x: number; y: number; width: number; height: number }) => void
   setWallpaper: (url: string | null) => void
   setPendingApp: (pending: { appId: string; options?: OpenAppOptions } | null) => void
 }
@@ -126,6 +127,8 @@ export const useOs = create<OsState>((set, get) => ({
     set((s) => ({ windows: s.windows.map((w) => (w.id === id ? { ...w, maximized: !w.maximized } : w)) })),
 
   moveWindow: (id, x, y) => set((s) => ({ windows: s.windows.map((w) => (w.id === id ? { ...w, x, y } : w)) })),
+
+  resizeWindow: (id, rect) => set((s) => ({ windows: s.windows.map((w) => (w.id === id ? { ...w, ...rect } : w)) })),
 
   setWallpaper: (wallpaperOverride) => set({ wallpaperOverride }),
 

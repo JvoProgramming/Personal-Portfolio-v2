@@ -1,5 +1,7 @@
+import { useEffect, useRef } from 'react'
 import type { AppDefinition } from '../apps/registry'
 import { useAppTitle, useT, type TKey } from '../lib/i18n'
+import { moveFocus } from './menuFocus'
 import { useOs } from './store'
 import type { UserAccount } from './users'
 
@@ -11,9 +13,26 @@ export function StartMenu({ account, apps, onOpen }: { account: UserAccount; app
   const appTitle = useAppTitle()
   const programs = apps.filter((a) => !PLACES.has(a.id))
   const places = apps.filter((a) => PLACES.has(a.id))
+  const ref = useRef<HTMLDivElement>(null)
+
+  // Focus the first item, close on a click outside, and hand focus back to Start when closed.
+  useEffect(() => {
+    const start = document.querySelector<HTMLElement>('.taskbar__start')
+    const menu = ref.current
+    menu?.querySelector<HTMLElement>('[role=menuitem]')?.focus({ preventScroll: true })
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Node
+      if (!menu?.contains(target) && !start?.contains(target)) useOs.getState().setStartOpen(false)
+    }
+    window.addEventListener('pointerdown', onDown, true)
+    return () => {
+      window.removeEventListener('pointerdown', onDown, true)
+      if (menu?.contains(document.activeElement) || document.activeElement === document.body) start?.focus({ preventScroll: true })
+    }
+  }, [])
 
   return (
-    <div className="start-menu" role="menu" aria-label="Start menu">
+    <div ref={ref} className="start-menu" role="menu" aria-label="Start menu" onKeyDown={(e) => moveFocus(e, ref.current)}>
       <header className="start-menu__header">
         <span className="start-menu__avatar" aria-hidden="true">
           {account.avatar}
