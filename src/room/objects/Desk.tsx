@@ -1,12 +1,14 @@
 import { RoundedBox } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useInteractive } from '../interactive'
+import { grainNormal } from '../materials'
 import { useRoom } from '../roomStore'
 import { screenTexture } from '../textures'
 
 import { DESK, SCREEN_POS } from '../layout'
+import { Model } from '../Model'
 
 type V3 = [number, number, number]
 
@@ -58,6 +60,18 @@ function Keycaps({ position }: { position: V3 }) {
   )
 }
 
+const MOUSE_CABLE = new THREE.TubeGeometry(
+  new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0.33, DESK.y + 0.012, DESK.z + 0.2),
+    new THREE.Vector3(0.34, DESK.y + 0.004, DESK.z + 0.12),
+    new THREE.Vector3(0.4, DESK.y + 0.004, DESK.z + 0.02),
+    new THREE.Vector3(0.48, DESK.y + 0.004, DESK.z - 0.15),
+  ]),
+  30,
+  0.003,
+  6,
+)
+
 export function Desk() {
   const { y, z } = DESK
   return (
@@ -80,7 +94,14 @@ export function Desk() {
         <sphereGeometry args={[0.03, 16, 12]} />
         <meshStandardMaterial color="#e6e1d3" />
       </mesh>
-      <Part pos={[0.33, y + 0.002, z + 0.24]} size={[0.2, 0.004, 0.18]} color="#2a2a40" />
+      <mesh position={[0.33, y + 0.022, z + 0.24]} rotation={[0, 0, 0]}>
+        <boxGeometry args={[0.002, 0.004, 0.035]} />
+        <meshStandardMaterial color="#b8b2a2" />
+      </mesh>
+      <mesh geometry={MOUSE_CABLE}>
+        <meshStandardMaterial color="#d8d2c2" roughness={0.6} />
+      </mesh>
+      <Part pos={[0.33, y + 0.002, z + 0.24]} size={[0.2, 0.004, 0.18]} color="#2a2a40" radius={0.002} />
       {/* A mug of tea */}
       <group position={[-0.42, y, z + 0.12]}>
         <mesh position={[0, 0.045, 0]} castShadow>
@@ -105,7 +126,15 @@ export function Desk() {
 }
 
 /** The idle CRT plays an XP-style screensaver, so the one thing to click is the thing that glows and moves. */
-function ScreenGlass({ poweringOn, hovered }: { poweringOn: boolean; hovered: boolean }) {
+interface ScreenRect {
+  pos: THREE.Vector3
+  w: number
+  h: number
+}
+
+const BUILT_SCREEN: ScreenRect = { pos: SCREEN_POS.clone(), w: 0.44, h: 0.33 }
+
+function ScreenGlass({ poweringOn, hovered, rect }: { poweringOn: boolean; hovered: boolean; rect: ScreenRect }) {
   const material = useRef<THREE.MeshBasicMaterial>(null)
   const saver = useMemo(() => {
     const canvas = document.createElement('canvas')
@@ -164,12 +193,37 @@ function ScreenGlass({ poweringOn, hovered }: { poweringOn: boolean; hovered: bo
   })
 
   return (
-    <mesh position={SCREEN_POS}>
-      <planeGeometry args={[0.44, 0.33]} />
+    <mesh position={rect.pos} geometry={GLASS} scale={[rect.w / 0.44, rect.h / 0.33, 1]}>
       <meshBasicMaterial ref={material} map={poweringOn ? screenTexture(true) : saver} toneMapped={false} color={poweringOn ? '#ffffff' : hovered ? '#e8eeff' : '#b8c4e6'} />
     </mesh>
   )
 }
+
+// CRT glass bulges outward a little, like the real thing.
+const GLASS = (() => {
+  const g = new THREE.PlaneGeometry(0.44, 0.33, 16, 12)
+  const pos = g.attributes.position as THREE.BufferAttribute
+  for (let i = 0; i < pos.count; i++) {
+    const nx = pos.getX(i) / 0.22
+    const ny = pos.getY(i) / 0.165
+    pos.setZ(i, 0.007 * (1 - nx * nx * 0.6 - ny * ny * 0.6))
+  }
+  g.computeVertexNormals()
+  return g
+})()
+
+/** The tapered back of the CRT: a rectangular frustum pointing away from the screen. */
+const CRT_BACK = (() => {
+  const g = new THREE.CylinderGeometry(1, 0.62, 0.3, 4, 1)
+  g.rotateY(Math.PI / 4)
+  g.scale(0.27 / Math.SQRT1_2, 1, 0.215 / Math.SQRT1_2)
+  g.rotateX(Math.PI / 2)
+  return g.toNonIndexed()
+})()
+
+const BEIGE = '#ddd7c7'
+/** Turns the downloaded monitor to face the room. */
+const CRT_TURN = 0
 
 export function Computer() {
   const poweringOn = useRoom((s) => s.poweringOn)
@@ -179,32 +233,101 @@ export function Computer() {
   const ledMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: '#39ff6a', toneMapped: false }), [])
   // Lights stay mounted and only change brightness: adding or removing a light recompiles every material.
   const glow = poweringOn ? 2.5 : hovered ? 1.1 : 0.45
+  const [screen, setScreen] = useState(BUILT_SCREEN)
+  // When the downloaded monitor arrives, fit the screensaver onto its glass and aim the fly-in there.
+  const onMonitor = useCallback((root: THREE.Group) => {
+    root.updateWorldMatrix(true, true)
+    let glass: THREE.Object3D | undefined
+    root.traverse((o) => {
+      const mat = (o as THREE.Mesh).material as THREE.Material | undefined
+      if (mat && mat.name === 'monitor_glass') glass = o
+    })
+    if (!glass) return
+    const box = new THREE.Box3().setFromObject(glass)
+    const size = box.getSize(new THREE.Vector3())
+    const center = box.getCenter(new THREE.Vector3())
+    const pos = new THREE.Vector3(center.x, center.y, box.max.z + 0.001)
+    SCREEN_POS.copy(pos)
+    setScreen({ pos, w: size.x * 0.86, h: size.y * 0.84 })
+  }, [])
 
   return (
     <group {...props}>
-      {/* CRT monitor: chunky beige body, a recessed bezel, and the glass */}
-      <Part pos={[0, y + 0.03, z - 0.05]} size={[0.3, 0.03, 0.25]} color="#d9d3c3" radius={0.01} />
-      <Part pos={[0, y + 0.3, z - 0.1]} size={[0.56, 0.46, 0.3]} color="#ddd7c7" radius={0.03} />
-      <Part pos={[0, y + 0.3, z - 0.33]} size={[0.44, 0.36, 0.2]} color="#cfc8b6" radius={0.04} />
-      <mesh position={[0, SCREEN_POS.y, SCREEN_POS.z - 0.001]}>
-        <planeGeometry args={[0.48, 0.37]} />
-        <meshStandardMaterial color="#26251f" roughness={0.3} />
-      </mesh>
-      <ScreenGlass poweringOn={poweringOn} hovered={hovered} />
+      <Model
+        url="/models/crt_monitor.glb"
+        fit={{ height: 0.5 }}
+        position={[0, DESK.y, DESK.z - 0.12]}
+        rotation={[0, CRT_TURN, 0]}
+        onReady={onMonitor}
+        fallback={
+          <>
+          {/* CRT monitor: swivel stand, deep tapered body, bezel, curved glass */}
+          <mesh position={[0, y + 0.012, z - 0.08]} castShadow>
+            <cylinderGeometry args={[0.13, 0.15, 0.024, 40]} />
+            <meshStandardMaterial color={BEIGE} roughness={0.55} normalMap={grainNormal(2)} normalScale={[0.2, 0.2]} />
+          </mesh>
+          <Part pos={[0, y + 0.045, z - 0.08]} size={[0.18, 0.04, 0.16]} color="#d3ccba" radius={0.012} />
+          <Part pos={[0, y + 0.3, z - 0.01]} size={[0.56, 0.46, 0.12]} color={BEIGE} radius={0.03} rough={0.55} />
+          <mesh geometry={CRT_BACK} position={[0, y + 0.31, z - 0.21]} castShadow>
+            <meshStandardMaterial color="#d6cfbd" roughness={0.6} flatShading />
+          </mesh>
+          {/* Vent slots on the back */}
+          {Array.from({ length: 9 }, (_, i) => (
+            <mesh key={i} position={[-0.12 + i * 0.03, y + 0.47, z - 0.25]} rotation={[-0.42, 0, 0]}>
+              <boxGeometry args={[0.012, 0.004, 0.12]} />
+              <meshStandardMaterial color="#5a564c" />
+            </mesh>
+          ))}
+          <mesh position={[0, SCREEN_POS.y, SCREEN_POS.z - 0.001]}>
+            <planeGeometry args={[0.48, 0.37]} />
+            <meshStandardMaterial color="#26251f" roughness={0.3} />
+          </mesh>
+          </>
+        }
+      />
+      <ScreenGlass poweringOn={poweringOn} hovered={hovered} rect={screen} />
+      {/* Brand plate, control buttons, power LED */}
       <mesh position={[0, y + 0.1, z + 0.053]}>
         <planeGeometry args={[0.1, 0.012]} />
-        <meshStandardMaterial color="#8d8676" />
+        <meshStandardMaterial color="#8d8676" metalness={0.4} roughness={0.4} />
       </mesh>
+      {[-0.2, -0.175, -0.15, 0.15, 0.175].map((bx) => (
+        <mesh key={bx} position={[bx, y + 0.1, z + 0.052]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.006, 0.006, 0.006, 12]} />
+          <meshStandardMaterial color="#c9c2b0" roughness={0.5} />
+        </mesh>
+      ))}
       <mesh position={[0.22, y + 0.1, z + 0.053]} material={ledMaterial}>
         <circleGeometry args={[0.008, 12]} />
       </mesh>
-      {/* Tower with a floppy slot and a CD drive */}
-      <Part pos={[0.62, y + 0.23, z - 0.05]} size={[0.2, 0.46, 0.44]} color="#ddd7c7" radius={0.015} />
-      <Part pos={[0.62, y + 0.38, z + 0.172]} size={[0.15, 0.035, 0.005]} color="#bdb6a3" />
-      <Part pos={[0.62, y + 0.32, z + 0.172]} size={[0.09, 0.008, 0.005]} color="#3a372f" />
-      <mesh position={[0.62, y + 0.1, z + 0.176]} material={ledMaterial}>
-        <circleGeometry args={[0.01, 12]} />
+      {/* Tower: two drive bays, floppy drive, power and reset, front vents */}
+      <Part pos={[0.62, y + 0.23, z - 0.05]} size={[0.2, 0.46, 0.44]} color={BEIGE} radius={0.015} rough={0.55} />
+      <Part pos={[0.62, y + 0.23, z + 0.168]} size={[0.18, 0.44, 0.01]} color="#d4cdbb" radius={0.004} />
+      {[0.41, 0.36].map((by) => (
+        <group key={by}>
+          <Part pos={[0.62, y + by, z + 0.175]} size={[0.15, 0.04, 0.006]} color="#cfc8b5" radius={0.003} />
+          <Part pos={[0.67, y + by - 0.01, z + 0.179]} size={[0.02, 0.008, 0.004]} color="#a9a291" />
+        </group>
+      ))}
+      <Part pos={[0.62, y + 0.3, z + 0.175]} size={[0.11, 0.03, 0.006]} color="#cfc8b5" radius={0.003} />
+      <Part pos={[0.6, y + 0.3, z + 0.179]} size={[0.07, 0.005, 0.004]} color="#3a372f" />
+      <mesh position={[0.62, y + 0.16, z + 0.176]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.016, 0.016, 0.01, 24]} />
+        <meshStandardMaterial color="#c9c2b0" roughness={0.45} />
       </mesh>
+      <mesh position={[0.66, y + 0.16, z + 0.176]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.005, 0.005, 0.008, 12]} />
+        <meshStandardMaterial color="#a9a291" />
+      </mesh>
+      <mesh position={[0.58, y + 0.16, z + 0.177]} material={ledMaterial}>
+        <circleGeometry args={[0.005, 12]} />
+      </mesh>
+      {Array.from({ length: 6 }, (_, i) => (
+        <mesh key={i} position={[0.62, y + 0.05 + i * 0.012, z + 0.174]}>
+          <boxGeometry args={[0.12, 0.004, 0.002]} />
+          <meshStandardMaterial color="#8f8979" />
+        </mesh>
+      ))}
       <pointLight position={[0, y + 0.3, z + 0.35]} intensity={glow} distance={2.2} color="#7fa6ff" />
     </group>
   )

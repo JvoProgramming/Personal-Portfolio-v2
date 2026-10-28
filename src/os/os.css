@@ -1355,3 +1355,14 @@ body {
   font-size: 13px;
   cursor: default;
 }
+
+/* ---------- Credits ---------- */
+.credits ul {
+  padding-left: 18px;
+  line-height: 1.6;
+}
+.credits h3,
+.app-pad > h3 {
+  font-size: 13px;
+  margin: 14px 0 4px;
+}

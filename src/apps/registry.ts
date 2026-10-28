@@ -35,6 +35,7 @@ export const APPS: AppDefinition[] = [
   { id: 'myspace', title: 'MySpace', icon: '🎸', users: JOHNNY, size: { width: 820, height: 600 }, component: lazy(() => import('./MySpaceApp')) },
   { id: 'montage', title: 'Montage Player', icon: '🎬', users: JOHNNY, size: { width: 820, height: 600 }, component: lazy(() => import('./MontageApp')) },
   { id: 'my-documents', title: 'My Documents', icon: '🗂️', users: BOTH, component: lazy(() => import('./MyDocumentsApp')) },
+  { id: 'credits', title: 'About & Credits', icon: 'ℹ️', users: BOTH, size: { width: 600, height: 520 }, component: lazy(() => import('./CreditsApp')) },
   { id: 'recycle-bin', title: 'Recycle Bin', icon: '🗑️', users: BOTH, component: lazy(() => import('./RecycleBinApp')) },
   // Opened from other apps only.
   { id: 'project', title: 'Project', icon: '📁', users: [], component: lazy(() => import('./ProjectApp')) },

@@ -23,5 +23,9 @@
         "react/immutability": "off"
       }
     }
+  ],
+  "ignorePatterns": [
+    "public/**",
+    "dist/**"
   ]
 }

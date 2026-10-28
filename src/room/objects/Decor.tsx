@@ -4,6 +4,7 @@ import { useInteractive } from '../interactive'
 import { useRoom } from '../roomStore'
 import { FRAME_PHOTOS, gameBoyScreen, photoTexture, posters, type FramePhoto } from '../textures'
 import { DESK, ROOM } from '../layout'
+import { Model } from '../Model'
 
 function Poster({ map, position, rotation = [0, 0, 0], size = [0.6, 0.9] }: { map: THREE.Texture; position: [number, number, number]; rotation?: [number, number, number]; size?: [number, number] }) {
   const { props } = useInteractive('obj.poster')
@@ -58,12 +59,22 @@ export function Shelf() {
       {FRAME_PHOTOS.map((p, i) => (
         <Frame key={p.id} photo={p} position={[-0.6 + i * 0.27, y + 0.12, z + (i % 2) * 0.03]} rotation={[-0.1, (i - 1.5) * 0.08, 0]} />
       ))}
-      {['#6c3483', '#1f618d', '#b9770e', '#117a65', '#922b21'].map((c, i) => (
-        <mesh key={c} position={[0.5 + i * 0.045, y + 0.1 + (i % 2) * 0.01, z]} rotation={[0, 0, i === 4 ? 0.25 : 0]} castShadow>
-          <boxGeometry args={[0.035, 0.18 + (i % 3) * 0.02, 0.15]} />
-          <meshStandardMaterial color={c} />
-        </mesh>
-      ))}
+      <group position={[0.6, y + 0.015, z]}>
+        <Model
+          url="/models/books_encyclopedia_set.glb"
+          fit={{ width: 0.34 }}
+          fallback={
+            <group position={[-0.6, -0.015, 0]}>
+              {['#6c3483', '#1f618d', '#b9770e', '#117a65', '#922b21'].map((c, i) => (
+                <mesh key={c} position={[0.5 + i * 0.045, y + 0.1 + (i % 2) * 0.01, z]} rotation={[0, 0, i === 4 ? 0.25 : 0]} castShadow>
+                  <boxGeometry args={[0.035, 0.18 + (i % 3) * 0.02, 0.15]} />
+                  <meshStandardMaterial color={c} />
+                </mesh>
+              ))}
+            </group>
+          }
+        />
+      </group>
     </group>
   )
 }
@@ -127,8 +138,13 @@ export function Food() {
         <meshStandardMaterial color="#3d281b" />
       </mesh>
       <group {...props}>
+        <group position={[x - 0.12, top, z - 0.05]}>
+          <Model
+            url="/models/pizza.glb"
+            fit={{ width: 0.36 }}
+            fallback={
+              <group position={[0, 0.01, 0]}>
         {/* Pizza: crust, sauce, cheese, pepperoni, ricotta, basil */}
-        <group position={[x - 0.12, top + 0.01, z - 0.05]}>
           <mesh receiveShadow castShadow>
             <cylinderGeometry args={[0.17, 0.17, 0.02, 32]} />
             <meshStandardMaterial color="#d79a54" roughness={0.9} />
@@ -159,6 +175,9 @@ export function Food() {
               <meshStandardMaterial color="#2f7d32" />
             </mesh>
           ))}
+              </group>
+            }
+          />
         </group>
         {/* Picanha frites */}
         <group position={[x + 0.17, top + 0.008, z + 0.08]}>
@@ -180,86 +199,6 @@ export function Food() {
           ))}
         </group>
       </group>
-    </group>
-  )
-}
-
-export function TennisGear() {
-  const { props } = useInteractive('obj.tennis')
-  const balls: [number, number, number][] = [
-    [-1.95, 0.033, -1.55],
-    [-1.75, 0.033, -1.35],
-    [-0.9, 0.033, -1.7],
-    [0.9, 0.033, 0.4],
-  ]
-  return (
-    <group {...props}>
-      {/* Racquet bag along the left wall */}
-      <mesh position={[-2.25, 0.14, -2.2]} rotation={[0, 0, Math.PI / 2]} castShadow receiveShadow>
-        <capsuleGeometry args={[0.13, 0.55, 8, 16]} />
-        <meshStandardMaterial color="#1d3557" roughness={0.8} />
-      </mesh>
-      <mesh position={[-2.25, 0.2, -2.2]} rotation={[0, 0, Math.PI / 2]}>
-        <capsuleGeometry args={[0.132, 0.2, 8, 16]} />
-        <meshStandardMaterial color="#e63946" roughness={0.8} />
-      </mesh>
-      {/* Racquet hanging on a hook by the desk */}
-      <group position={[-1.2, 1.15, -ROOM.halfD + 0.03]} rotation={[0, 0, 0.12]}>
-        <mesh scale={[1, 1.25, 1]} castShadow>
-          <torusGeometry args={[0.12, 0.012, 8, 32]} />
-          <meshStandardMaterial color="#222" metalness={0.3} />
-        </mesh>
-        <mesh position={[0, 0.12, 0]} scale={[1, 1.25, 1]}>
-          <circleGeometry args={[0.115, 24]} />
-          <meshStandardMaterial color="#e9e9e9" transparent opacity={0.25} />
-        </mesh>
-        <mesh position={[0, -0.27, 0]} castShadow>
-          <cylinderGeometry args={[0.014, 0.016, 0.24, 8]} />
-          <meshStandardMaterial color="#c1121f" />
-        </mesh>
-      </group>
-      {balls.map((p, i) => (
-        <mesh key={i} position={p} castShadow>
-          <sphereGeometry args={[0.033, 16, 12]} />
-          <meshStandardMaterial color="#d4ec3a" roughness={1} />
-        </mesh>
-      ))}
-    </group>
-  )
-}
-
-/** Plastic guitar controller leaning against the wall next to the desk. */
-export function GuitarController() {
-  const powerOn = useRoom((s) => s.powerOn)
-  const { props } = useInteractive('obj.guitar', () => {
-    useOs.getState().setPendingApp({ appId: 'arcade', options: { props: { game: 'rhythm' } } })
-    powerOn()
-  })
-  const frets = ['#2ecc40', '#ff4136', '#ffdc00', '#0074d9', '#ff851b']
-  return (
-    <group position={[1.35, 0.02, -ROOM.halfD + 0.2]} rotation={[0.18, -0.3, 0.12]} {...props}>
-      <mesh position={[0, 0.22, 0]} scale={[1, 1.15, 0.35]} castShadow>
-        <sphereGeometry args={[0.17, 20, 16]} />
-        <meshStandardMaterial color="#d7263d" roughness={0.4} />
-      </mesh>
-      <mesh position={[0.05, 0.36, 0.03]} scale={[1, 1, 0.35]} castShadow>
-        <sphereGeometry args={[0.12, 20, 16]} />
-        <meshStandardMaterial color="#d7263d" roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 0.2, 0.06]}>
-        <boxGeometry args={[0.1, 0.03, 0.02]} />
-        <meshStandardMaterial color="#eee" />
-      </mesh>
-      <mesh position={[0, 0.72, 0]} castShadow>
-        <boxGeometry args={[0.06, 0.62, 0.035]} />
-        <meshStandardMaterial color="#1b1b1b" />
-      </mesh>
-      {frets.map((c, i) => (
-        <mesh key={c} position={[0, 0.88 - i * 0.045, 0.02]}>
-          <boxGeometry args={[0.04, 0.03, 0.012]} />
-          <meshStandardMaterial color={c} emissive={c} emissiveIntensity={0.3} />
-        </mesh>
-      ))}
     </group>
   )
 }

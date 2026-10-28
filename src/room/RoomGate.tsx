@@ -98,6 +98,9 @@ export default function RoomGate() {
             </button>
             <a href="/resume">{t('room.skipResume')}</a>
           </div>
+          <a className="room__credits" href="/credits">
+            {t('room.credits')}
+          </a>
         </>
       )}
       <RoomModal />

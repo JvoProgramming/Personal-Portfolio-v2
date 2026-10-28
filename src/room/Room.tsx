@@ -5,8 +5,10 @@ import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Buzzer, Dust } from './objects/Ambience'
 import { Chair } from './objects/Chair'
-import { Curtains, FairyLights, Plant, WallClock } from './objects/Cozy'
-import { Food, GameBoy, GuitarController, Posters, Shelf, TennisGear } from './objects/Decor'
+import { BeanBag, Curtains, FairyLights, Plant, WallClock } from './objects/Cozy'
+import { Food, GameBoy, Posters, Shelf } from './objects/Decor'
+import { GuitarController } from './objects/Guitar'
+import { TennisGear } from './objects/Tennis'
 import { SCREEN_POS } from './layout'
 import { Computer, Desk } from './objects/Desk'
 import { Lamp } from './objects/Lamp'
@@ -17,8 +19,11 @@ import { isCoarsePointer } from '../lib/env'
 import { useRoom } from './roomStore'
 import type { Lighting } from './time'
 
-const HOME = new THREE.Vector3(-0.55, 1.55, 2.25)
-const LOOK = new THREE.Vector3(0.45, 0.95, -1.8)
+// `?cam=x,y,z,tx,ty,tz` pins the camera for close-up screenshots while working on models.
+const CAM = new URLSearchParams(window.location.search).get('cam')?.split(',').map(Number)
+const HOME = CAM?.length === 6 ? new THREE.Vector3(CAM[0], CAM[1], CAM[2]) : new THREE.Vector3(-0.55, 1.55, 2.25)
+const LOOK = CAM?.length === 6 ? new THREE.Vector3(CAM[3], CAM[4], CAM[5]) : new THREE.Vector3(0.45, 0.95, -1.8)
+const PARALLAX = CAM ? 0 : 1
 
 function CameraRig({ onEnter }: { onEnter: () => void }) {
   const { camera, pointer, size } = useThree()
@@ -52,9 +57,9 @@ function CameraRig({ onEnter }: { onEnter: () => void }) {
         }
       }
     } else {
-      goal.current.set(HOME.x + pointer.x * (portrait ? 0.15 : 0.35), HOME.y + pointer.y * 0.12, HOME.z)
+      goal.current.set(HOME.x + pointer.x * (portrait ? 0.15 : 0.35) * PARALLAX, HOME.y + pointer.y * 0.12 * PARALLAX, HOME.z)
       camera.position.lerp(goal.current, 1 - Math.exp(-delta * 2))
-      lookGoal.current.set(LOOK.x + (portrait ? pointer.x * 1.4 : 0), LOOK.y, LOOK.z)
+      lookGoal.current.set(LOOK.x + (portrait ? pointer.x * 1.4 * PARALLAX : 0), LOOK.y, LOOK.z)
       look.current.lerp(lookGoal.current, 1 - Math.exp(-delta * 2.5))
     }
     camera.lookAt(look.current)
@@ -84,6 +89,7 @@ function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: ()
       <FairyLights lighting={lighting} />
       <WallClock />
       <Plant />
+      <BeanBag />
       <Curtains />
       <Dust lighting={lighting} />
       <Buzzer lighting={lighting} />
@@ -108,7 +114,7 @@ export default function Room({ onEnter, lighting }: { onEnter: () => void; light
 
   return (
     <Canvas
-      shadows
+      shadows="percentage"
       // No tone mapping, so the room looks the same with or without the post effects.
       flat
       camera={{ position: HOME.toArray(), fov: 55, near: 0.05, far: 40 }}
