@@ -84,35 +84,45 @@ export function GameBoy() {
   const { props } = useInteractive('obj.gameboy', () => setModal({ type: 'gameboy' }))
   return (
     <group position={[-0.32, DESK.y + 0.012, DESK.z + 0.27]} rotation={[-Math.PI / 2, 0, 0.35]} {...props}>
-      <mesh castShadow>
-        <boxGeometry args={[0.09, 0.14, 0.022]} />
-        <meshStandardMaterial color="#c9c4bc" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 0.03, 0.012]}>
-        <planeGeometry args={[0.07, 0.06]} />
-        <meshStandardMaterial color="#555b6e" />
-      </mesh>
-      <mesh position={[0, 0.03, 0.013]}>
-        <planeGeometry args={[0.05, 0.045]} />
-        <meshStandardMaterial map={gameBoyScreen()} emissiveMap={gameBoyScreen()} emissive="#ffffff" emissiveIntensity={0.25} />
-      </mesh>
-      {[
-        [0.022, -0.035, '#8b1a4a'],
-        [0.035, -0.025, '#8b1a4a'],
-      ].map(([x, y, c]) => (
-        <mesh key={String(x)} position={[x as number, y as number, 0.013]}>
-          <circleGeometry args={[0.008, 12]} />
-          <meshStandardMaterial color={c as string} />
-        </mesh>
-      ))}
-      <mesh position={[-0.025, -0.03, 0.013]}>
-        <planeGeometry args={[0.025, 0.008]} />
-        <meshStandardMaterial color="#222" />
-      </mesh>
-      <mesh position={[-0.025, -0.03, 0.0131]}>
-        <planeGeometry args={[0.008, 0.025]} />
-        <meshStandardMaterial color="#222" />
-      </mesh>
+      {/* Model stands upright in its file; this group lays it flat on the desk, screen up. */}
+      <Model
+        url="/models/gameboy_original.glb"
+        fit={{ height: 0.148 }}
+        position={[0, -0.074, 0]}
+        fallback={
+          <>
+          <mesh castShadow>
+            <boxGeometry args={[0.09, 0.14, 0.022]} />
+            <meshStandardMaterial color="#c9c4bc" roughness={0.6} />
+          </mesh>
+          <mesh position={[0, 0.03, 0.012]}>
+            <planeGeometry args={[0.07, 0.06]} />
+            <meshStandardMaterial color="#555b6e" />
+          </mesh>
+          <mesh position={[0, 0.03, 0.013]}>
+            <planeGeometry args={[0.05, 0.045]} />
+            <meshStandardMaterial map={gameBoyScreen()} emissiveMap={gameBoyScreen()} emissive="#ffffff" emissiveIntensity={0.25} />
+          </mesh>
+          {[
+            [0.022, -0.035, '#8b1a4a'],
+            [0.035, -0.025, '#8b1a4a'],
+          ].map(([x, y, c]) => (
+            <mesh key={String(x)} position={[x as number, y as number, 0.013]}>
+              <circleGeometry args={[0.008, 12]} />
+              <meshStandardMaterial color={c as string} />
+            </mesh>
+          ))}
+          <mesh position={[-0.025, -0.03, 0.013]}>
+            <planeGeometry args={[0.025, 0.008]} />
+            <meshStandardMaterial color="#222" />
+          </mesh>
+          <mesh position={[-0.025, -0.03, 0.0131]}>
+            <planeGeometry args={[0.008, 0.025]} />
+            <meshStandardMaterial color="#222" />
+          </mesh>
+          </>
+        }
+      />
     </group>
   )
 }
@@ -129,14 +139,23 @@ export function Food() {
   const top = 0.58
   return (
     <group>
-      <mesh position={[x, top - 0.015, z]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.38, 0.38, 0.03, 32]} />
-        <meshStandardMaterial color="#5b3b28" roughness={0.6} />
-      </mesh>
-      <mesh position={[x, (top - 0.03) / 2, z]} castShadow>
-        <cylinderGeometry args={[0.03, 0.05, top - 0.03, 12]} />
-        <meshStandardMaterial color="#3d281b" />
-      </mesh>
+      <Model
+        url="/models/side_table_marble_round.glb"
+        fit={{ height: top }}
+        position={[x, 0, z]}
+        fallback={
+          <>
+            <mesh position={[x, top - 0.015, z]} castShadow receiveShadow>
+              <cylinderGeometry args={[0.38, 0.38, 0.03, 32]} />
+              <meshStandardMaterial color="#5b3b28" roughness={0.6} />
+            </mesh>
+            <mesh position={[x, (top - 0.03) / 2, z]} castShadow>
+              <cylinderGeometry args={[0.03, 0.05, top - 0.03, 12]} />
+              <meshStandardMaterial color="#3d281b" />
+            </mesh>
+          </>
+        }
+      />
       <group {...props}>
         <group position={[x - 0.12, top, z - 0.05]}>
           <Model

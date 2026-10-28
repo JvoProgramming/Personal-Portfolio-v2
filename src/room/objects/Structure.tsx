@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { rugTexture, woodTexture } from '../textures'
 
 import { ROOM, WINDOW } from '../layout'
+import { Model } from '../Model'
 
 const WALL = '#46557a'
 const T = 0.1
@@ -38,10 +39,18 @@ export function Structure() {
         <meshStandardMaterial map={floorTex} roughness={0.8} />
       </mesh>
       {/* Rug */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-0.3, 0.005, 0.1]} receiveShadow>
-        <planeGeometry args={[2.4, 1.8]} />
-        <meshStandardMaterial map={rug} roughness={1} />
-      </mesh>
+      <Model
+        url="/models/rug_woven_qashqai.glb"
+        fit={{ box: [2.4, 0.012, 1.8] }}
+        position={[-0.3, 0.002, 0.1]}
+        shadows={false}
+        fallback={
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-0.3, 0.005, 0.1]} receiveShadow>
+            <planeGeometry args={[2.4, 1.8]} />
+            <meshStandardMaterial map={rug} roughness={1} />
+          </mesh>
+        }
+      />
       {/* Ceiling */}
       <Box pos={[0, height + T / 2, 0]} size={[halfW * 2 + 0.2, T, halfD * 2 + 1]} color="#2c3550" />
       {/* Back and left walls */}

@@ -3,15 +3,37 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useInteractive } from '../interactive'
 import { deform, strandNormal } from '../materials'
-import { useRoom } from '../roomStore'
+import { keepOut } from '../play/physics'
+import { bark, sigh, yip } from '../play/sound'
+import { drop, play, toys } from '../play/toys'
 import { bake, chain, cone, ellipsoid, mixColor, scaled, sphere, union } from '../sdf'
 
 const BED = new THREE.Vector3(-1.75, 0, -0.75)
 const REST_HEADING = 0.9
-const SPEED = 0.8
-const MOUTH = 0.3
+const WALK = 0.8
+const RUN = 1.7
+/** Where she brings toys back to: on the rug, in front of you. */
+const DROP_SPOT = new THREE.Vector3(-0.2, 0, 0.35)
+/** Where the viewer is, so she can look at you. */
+const VIEWER = new THREE.Vector3(-0.55, 0, 2.25)
+/** How far ahead of her center her mouth is (meters, at her scale). */
+const REACH = 0.2
+/** She waits this long for another throw before going back to bed. */
+const PATIENCE = 12
 
-type Task = { kind: 'walk'; to: THREE.Vector3 } | { kind: 'pickup' } | { kind: 'drop' } | { kind: 'lie' }
+type Mode =
+  /** Napping in her bed. */
+  | 'sleep'
+  /** Running after a thrown toy. */
+  | 'chase'
+  /** Bringing a toy back to you. */
+  | 'return'
+  /** The toy landed somewhere she can't reach (desk, bed): she barks at it. */
+  | 'stuck'
+  /** Sitting in front of you, tail going, hoping for another throw. */
+  | 'wait'
+  /** Heading back to bed. */
+  | 'bed'
 
 
 // Mochi is a Chihuahua mix, modeled from a photo of her: a solid fawn coat, a stocky barrel
@@ -117,26 +139,7 @@ function buildShapes() {
       color: (p) => mixColor(TAN, LIGHT, (0.04 - p.y) / 0.04 + (p.z + 0.03) / 0.04 - 1),
     },
   )
-  const bone = bake(
-    union(
-      0.012,
-      cone([-0.055, 0, 0], [0.055, 0, 0], 0.012, 0.012),
-      sphere([-0.064, 0, -0.014], 0.019),
-      sphere([-0.064, 0, 0.014], 0.019),
-      sphere([0.064, 0, -0.014], 0.019),
-      sphere([0.064, 0, 0.014], 0.019),
-    ),
-    { center: [0, 0, 0], half: 0.1, resolution: 36 },
-  )
-  return { head, body, leg, tail, bone }
-}
-
-function Bone(props: { position?: [number, number, number]; rotation?: [number, number, number] }) {
-  return (
-    <mesh {...props} geometry={getShapes().bone} castShadow>
-      <meshStandardMaterial color="#f3ecdc" roughness={0.55} />
-    </mesh>
-  )
+  return { head, body, leg, tail }
 }
 
 /** The donut-shaped plush bed: a lathed bolster ring and a tufted cushion. */
@@ -177,94 +180,276 @@ function DogBed() {
   )
 }
 
-/** Mochi (a Chihuahua mix) naps in her bed. Click her (or the bed or bone) and she fetches her bone, or drops it off. */
+/** A heart, painted once, for the hearts that float up when you pet her. */
+let heartTex: THREE.CanvasTexture | null = null
+function heartTexture() {
+  if (heartTex) return heartTex
+  const c = document.createElement('canvas')
+  c.width = c.height = 64
+  const g = c.getContext('2d')!
+  g.fillStyle = '#ff4f7b'
+  g.beginPath()
+  g.moveTo(32, 56)
+  g.bezierCurveTo(4, 36, 2, 14, 18, 10)
+  g.bezierCurveTo(26, 8, 31, 14, 32, 20)
+  g.bezierCurveTo(33, 14, 38, 8, 46, 10)
+  g.bezierCurveTo(62, 14, 60, 36, 32, 56)
+  g.fill()
+  g.fillStyle = 'rgba(255,255,255,0.7)'
+  g.beginPath()
+  g.ellipse(20, 20, 5, 3, -0.6, 0, Math.PI * 2)
+  g.fill()
+  heartTex = new THREE.CanvasTexture(c)
+  heartTex.colorSpace = THREE.SRGBColorSpace
+  return heartTex
+}
+
+const HEARTS = 12
+const HEARTS_LIST = Array.from({ length: HEARTS }, (_, i) => i)
+interface Heart {
+  age: number
+  vel: THREE.Vector3
+}
+
+/** Mochi (a Chihuahua mix). Throw a toy and she fetches it; hold or stroke her to pet her. */
 export function Mochi() {
-  const calls = useRoom((s) => s.mochiCalls)
-  const callMochi = useRoom((s) => s.callMochi)
-  const { props } = useInteractive('obj.mochi', callMochi)
+  const petting = useRef(false)
+  const { props } = useInteractive('obj.mochi', undefined, 'pointer')
 
   const dog = useRef<THREE.Group>(null)
   const body = useRef<THREE.Group>(null)
   const tail = useRef<THREE.Group>(null)
   const head = useRef<THREE.Group>(null)
+  const mouthAt = useRef<THREE.Group>(null)
   const legs = useRef<(THREE.Group | null)[]>([])
-  const carriedBone = useRef<THREE.Group>(null)
-  const floorBone = useRef<THREE.Group>(null)
+  const hearts = useRef<(THREE.Sprite | null)[]>([])
+  const heartState = useRef<Heart[]>(Array.from({ length: HEARTS }, () => ({ age: 99, vel: new THREE.Vector3() })))
 
   const state = useRef({
+    mode: 'sleep' as Mode,
     pos: BED.clone(),
     heading: REST_HEADING,
     lying: true,
-    carrying: false,
-    bone: new THREE.Vector3(-0.35, 0, 0.45),
-    queue: [] as Task[],
+    target: -1,
+    carry: -1,
+    seenThrows: 0,
     timer: 0,
     phase: 0,
+    /** Seconds of happy wiggle left after a pet. */
+    happy: 0,
+    nextHeart: 0,
+    /** For noticing when she's stuck behind something. */
+    best: Infinity,
+    stall: 0,
   })
 
+  // Petting: press on her (and keep holding or stroking) for hearts and happy noises.
   useEffect(() => {
-    if (calls === 0) return
-    const s = state.current
-    if (s.queue.length) return
-    s.lying = false
-    if (!s.carrying) {
-      const approach = s.bone.clone().sub(BED).setY(0).normalize()
-      s.queue = [{ kind: 'walk', to: s.bone.clone().addScaledVector(approach, -MOUTH) }, { kind: 'pickup' }, { kind: 'walk', to: BED.clone() }, { kind: 'lie' }]
-    } else {
-      const spot = new THREE.Vector3(-1.1 + Math.random() * 1.4, 0, -0.2 + Math.random() * 0.8)
-      s.queue = [{ kind: 'walk', to: spot }, { kind: 'drop' }, { kind: 'walk', to: BED.clone() }, { kind: 'lie' }]
+    const stop = () => {
+      petting.current = false
     }
-  }, [calls])
-
-  useFrame(({ clock }, delta) => {
+    window.addEventListener('pointerup', stop)
+    window.addEventListener('pointercancel', stop)
+    return () => {
+      window.removeEventListener('pointerup', stop)
+      window.removeEventListener('pointercancel', stop)
+    }
+  }, [])
+  const startPet = () => {
     const s = state.current
-    const task = s.queue[0]
-    let moving = false
-    if (task?.kind === 'walk') {
-      const dir = task.to.clone().sub(s.pos).setY(0)
+    petting.current = true
+    s.nextHeart = 0
+    if (s.mode === 'sleep') sigh()
+    else yip()
+    if (s.mode === 'wait') s.timer = 0
+  }
+
+  const tmp = useMemo(() => ({ v: new THREE.Vector3(), mouth: new THREE.Vector3(), q: new THREE.Quaternion(), up: new THREE.Vector3(0, 1, 0) }), [])
+
+  useFrame(({ clock }, rawDelta) => {
+    const delta = Math.min(rawDelta, 0.1)
+    const s = state.current
+    const t = clock.elapsedTime
+
+    // Mouth position in the room, for picking up and carrying toys.
+    if (mouthAt.current) mouthAt.current.getWorldPosition(tmp.mouth)
+
+    // A new throw always wins: drop whatever she has and run for the newest toy.
+    if (play.throws !== s.seenThrows) {
+      s.seenThrows = play.throws
+      const thrown = play.lastThrown
+      if (s.carry >= 0 && s.carry !== thrown) {
+        drop(toys[s.carry], tmp.mouth)
+        s.carry = -1
+      }
+      if (s.carry !== thrown) {
+        s.target = thrown
+        s.mode = 'chase'
+        s.lying = false
+        s.best = Infinity
+        s.stall = 0
+        if (Math.random() < 0.5) yip()
+      }
+    }
+
+    /** Walks (or runs) toward a floor point; returns the distance left. */
+    const goTo = (goal: THREE.Vector3, speed: number, stopAt = 0.02) => {
+      const dir = tmp.v.copy(goal).sub(s.pos).setY(0)
       const dist = dir.length()
-      if (dist < 0.02) {
-        s.queue.shift()
-      } else {
-        moving = true
-        s.pos.addScaledVector(dir.normalize(), Math.min(dist, SPEED * delta))
+      if (dist > stopAt) {
         const want = Math.atan2(dir.x, dir.z)
         let diff = want - s.heading
         diff = Math.atan2(Math.sin(diff), Math.cos(diff))
         s.heading += diff * Math.min(1, delta * 10)
+        // Turn first, then go: she doesn't moonwalk.
+        const facing = Math.max(0, Math.cos(diff))
+        s.pos.x += Math.sin(s.heading) * Math.min(dist - stopAt, speed * delta) * facing
+        s.pos.z += Math.cos(s.heading) * Math.min(dist - stopAt, speed * delta) * facing
+        keepOut(s.pos, 0.12)
+        s.phase += delta * (speed > 1 ? 20 : 14)
       }
-    } else if (task?.kind === 'pickup' || task?.kind === 'drop') {
-      s.timer += delta
-      if (s.timer > 0.45) {
-        s.timer = 0
-        if (task.kind === 'pickup') {
-          s.carrying = true
-        } else {
-          s.carrying = false
-          s.bone.set(s.pos.x + Math.sin(s.heading) * MOUTH, 0, s.pos.z + Math.cos(s.heading) * MOUTH)
-        }
-        s.queue.shift()
-      }
-    } else if (task?.kind === 'lie') {
-      let diff = REST_HEADING - s.heading
+      return dist
+    }
+    const face = (p: THREE.Vector3) => {
+      let diff = Math.atan2(p.x - s.pos.x, p.z - s.pos.z) - s.heading
       diff = Math.atan2(Math.sin(diff), Math.cos(diff))
-      s.heading += diff * Math.min(1, delta * 4)
-      if (Math.abs(diff) < 0.05) {
-        s.lying = true
-        s.queue.shift()
-      }
+      s.heading += diff * Math.min(1, delta * 5)
     }
 
-    if (moving) s.phase += delta * 14
-    const t = clock.elapsedTime
+    let moving = false
+    const toy = s.target >= 0 ? toys[s.target] : null
+    switch (s.mode) {
+      case 'chase': {
+        if (!toy || toy.state === 'held') {
+          s.mode = 'wait'
+          s.timer = 0
+          break
+        }
+        // Aim so her mouth, not her middle, ends up on the toy.
+        const dir = tmp.v.copy(toy.pos).sub(s.pos).setY(0)
+        const d = dir.length()
+        const goal = d > 0.001 ? toy.pos.clone().setY(0).addScaledVector(dir.normalize(), -REACH) : toy.pos.clone().setY(0)
+        const left = goTo(goal, RUN, 0.01)
+        moving = left > 0.01
+        const reach = Math.hypot(tmp.mouth.x - toy.pos.x, tmp.mouth.z - toy.pos.z)
+        // Notice when walking isn't getting her closer (something's in the way).
+        if (reach < s.best - 0.01) {
+          s.best = reach
+          s.stall = 0
+        } else s.stall += delta
+        const resting = !toy.moving || toy.vel.length() < 0.25
+        const onFloor = toy.pos.y < 0.15
+        if (onFloor && (reach < 0.07 || (s.stall > 1 && reach < 0.3 && resting))) {
+          toy.state = 'carried'
+          toy.moving = false
+          s.carry = toy.id
+          s.mode = 'return'
+        } else if (resting && (!onFloor || s.stall > 2.5)) {
+          // Up on the desk or bed, or wedged where she can't get to it.
+          s.mode = 'stuck'
+          s.timer = 0
+          bark()
+        }
+        break
+      }
+      case 'return': {
+        const left = goTo(DROP_SPOT, WALK * 1.2)
+        moving = left > 0.02
+        if (!moving) {
+          face(VIEWER)
+          if (s.carry >= 0) {
+            drop(toys[s.carry], tmp.mouth)
+            s.carry = -1
+            yip()
+          }
+          s.mode = 'wait'
+          s.timer = 0
+        }
+        break
+      }
+      case 'stuck': {
+        s.timer += delta
+        if (toy) face(toy.pos)
+        if (s.timer > 0.9 && s.timer - delta <= 0.9) bark()
+        if (s.timer > 2.2) {
+          s.mode = 'wait'
+          s.timer = 0
+        }
+        break
+      }
+      case 'wait': {
+        s.timer += delta
+        face(VIEWER)
+        if (s.timer > PATIENCE) s.mode = 'bed'
+        break
+      }
+      case 'bed': {
+        const left = goTo(BED, WALK)
+        moving = left > 0.02
+        if (!moving) {
+          let diff = REST_HEADING - s.heading
+          diff = Math.atan2(Math.sin(diff), Math.cos(diff))
+          s.heading += diff * Math.min(1, delta * 4)
+          if (Math.abs(diff) < 0.05) {
+            s.lying = true
+            s.mode = 'sleep'
+          }
+        }
+        break
+      }
+      case 'sleep':
+        break
+    }
+
+    // Carried toy sits in her mouth, crosswise.
+    if (s.carry >= 0) {
+      const c = toys[s.carry]
+      c.pos.copy(tmp.mouth)
+      c.spin.setFromAxisAngle(tmp.up, s.heading)
+    }
+
+    // Petting: hearts float up from her head while you hold or stroke her.
+    if (petting.current) {
+      s.happy = 1.2
+      s.nextHeart -= delta
+      if (s.nextHeart <= 0) {
+        s.nextHeart = 0.22
+        const free = heartState.current.findIndex((h) => h.age > 1.4)
+        if (free >= 0) {
+          const h = heartState.current[free]
+          h.age = 0
+          h.vel.set((Math.random() - 0.5) * 0.15, 0.32 + Math.random() * 0.1, (Math.random() - 0.5) * 0.15)
+          hearts.current[free]?.position.copy(tmp.mouth).add(tmp.v.set(0, 0.12, 0))
+        }
+        if (Math.random() < 0.12) (s.mode === 'sleep' ? sigh : yip)()
+      }
+    }
+    s.happy = Math.max(0, s.happy - delta)
+    heartState.current.forEach((h, i) => {
+      const sp = hearts.current[i]
+      if (!sp) return
+      h.age += delta
+      sp.visible = h.age < 1.4
+      if (!sp.visible) return
+      sp.position.addScaledVector(h.vel, delta)
+      sp.position.x += Math.sin((h.age + i) * 6) * 0.002
+      const k = Math.min(1, h.age * 6)
+      sp.scale.setScalar(0.07 * k)
+      ;(sp.material as THREE.SpriteMaterial).opacity = Math.min(1, (1.4 - h.age) * 2)
+    })
+
+    // Pose and animation.
+    const excited = s.mode === 'wait' || s.mode === 'stuck' || s.happy > 0
     if (dog.current) {
       dog.current.position.set(s.pos.x, s.lying ? 0.05 : 0, s.pos.z)
       dog.current.rotation.y = s.heading
     }
-    if (body.current) body.current.position.y = s.lying ? -0.1 : moving ? Math.abs(Math.sin(s.phase)) * 0.015 : 0
+    if (body.current) body.current.position.y = s.lying ? -0.1 : moving ? Math.abs(Math.sin(s.phase)) * 0.015 : excited ? Math.abs(Math.sin(t * 9)) * 0.004 : 0
     if (head.current) {
-      const dip = task?.kind === 'pickup' || task?.kind === 'drop' ? -0.35 : 0
-      head.current.rotation.x = s.lying ? 0.15 + Math.sin(t * 0.8) * 0.03 : dip
+      const dip = s.carry < 0 && s.mode === 'chase' && moving ? -0.12 : 0
+      head.current.rotation.x = s.lying ? 0.15 + Math.sin(t * 0.8) * 0.03 : s.happy > 0 ? -0.25 : s.mode === 'stuck' ? -0.35 : dip
+      // The classic head tilt while she waits for you.
+      head.current.rotation.z = s.mode === 'wait' || s.happy > 0 ? Math.sin(t * 0.7) * 0.25 : 0
     }
     legs.current.forEach((leg, i) => {
       if (!leg) return
@@ -273,11 +458,9 @@ export function Mochi() {
       leg.position.y = s.lying ? 0.05 : LEG_Y
       leg.rotation.x = s.lying ? (front ? -1.45 : 1.45) : moving ? Math.sin(s.phase + (i === 0 || i === 3 ? 0 : Math.PI)) * 0.5 : 0
     })
-    if (tail.current) tail.current.rotation.z = Math.sin(t * (s.lying ? 2 : 12)) * (s.lying ? 0.15 : 0.6)
-    if (carriedBone.current) carriedBone.current.visible = s.carrying
-    if (floorBone.current) {
-      floorBone.current.visible = !s.carrying
-      floorBone.current.position.set(s.bone.x, 0.02, s.bone.z)
+    if (tail.current) {
+      const fast = excited || s.carry >= 0
+      tail.current.rotation.z = Math.sin(t * (s.lying && !s.happy ? 2 : fast ? 22 : 12)) * (s.lying && !s.happy ? 0.15 : fast ? 0.7 : 0.5)
     }
   })
 
@@ -300,16 +483,34 @@ export function Mochi() {
 
   return (
     <group>
-      <group position={[BED.x, 0, BED.z]} {...props}>
+      <group position={[BED.x, 0, BED.z]}>
         <DogBed />
       </group>
 
-      <group ref={floorBone} {...props}>
-        <Bone rotation={[0, 0.6, 0]} />
-      </group>
+      {HEARTS_LIST.map((i) => (
+        <sprite
+          key={i}
+          ref={(sp) => {
+            hearts.current[i] = sp
+          }}
+          visible={false}
+        >
+          <spriteMaterial map={heartTexture()} transparent depthWrite={false} toneMapped={false} />
+        </sprite>
+      ))}
 
-      {/* Mochi */}
-      <group ref={dog} {...props}>
+      {/* Mochi: press to pet her, or stroke her with the button held down */}
+      <group
+        ref={dog}
+        {...props}
+        onPointerDown={(e) => {
+          e.stopPropagation()
+          startPet()
+        }}
+        onPointerMove={(e) => {
+          if (e.buttons && !petting.current && play.held < 0) startPet()
+        }}
+      >
         <group scale={SIZE}>
         <group ref={body}>
           <mesh geometry={parts.body} material={fur} castShadow />
@@ -355,9 +556,8 @@ export function Mochi() {
               <meshStandardMaterial color="#e0707a" roughness={0.4} />
             </mesh>
             </group>
-            <group ref={carriedBone} position={[0, -0.05, MOUTH - HEAD[2]]} visible={false}>
-              <Bone />
-            </group>
+            {/* Where a carried toy sits */}
+            <group ref={mouthAt} position={[0, -0.056, 0.112]} />
           </group>
           <group ref={tail} position={[0, 0.23, -0.135]}>
             <mesh geometry={parts.tail} material={fur} castShadow />

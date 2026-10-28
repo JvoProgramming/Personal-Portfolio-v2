@@ -5,8 +5,8 @@ import { useModel, type ModelProps } from './useModel'
 // Each one streams in after the room appears; until it arrives, or if it fails, the
 // hand-built version is shown instead, so the room is never empty or broken.
 
-function LoadedModel({ url, fit, rotation, order, position, onReady, shadows = true }: ModelProps) {
-  const { root } = useModel(url, fit, rotation, shadows, order)
+function LoadedModel({ url, fit, rotation, order, position, onReady, shadows = true, centered }: ModelProps) {
+  const { root } = useModel(url, fit, rotation, shadows, order, centered)
   useLayoutEffect(() => onReady?.(root), [root, onReady])
   return <primitive object={root} position={position} />
 }

@@ -188,7 +188,7 @@ export function BeanBag() {
 }
 
 /** Wavy curtains on either side of the window, with a rod. */
-export function Curtains() {
+function HandBuiltCurtains() {
   const geometry = useMemo(() => {
     const g = new THREE.PlaneGeometry(0.42, 1.55, 24, 1)
     const pos = g.attributes.position as THREE.BufferAttribute
@@ -211,5 +211,28 @@ export function Curtains() {
         </mesh>
       ))}
     </group>
+  )
+}
+
+/** The white inner sheers hide most of the view, so only the red tied-back curtains stay. */
+function hideSheers(scene: THREE.Group) {
+  scene.traverse((o) => {
+    const mesh = o as THREE.Mesh
+    if (mesh.isMesh && (mesh.material as THREE.Material).name === 'Shtora') mesh.visible = false
+  })
+}
+
+/** Red curtains tied back either side of the window. */
+export function Curtains() {
+  const { z0, z1, y0 } = WINDOW
+  return (
+    <Model
+      url="/models/curtains_red_tieback.glb"
+      fit={{ box: [0.28, 1.85, z1 - z0 + 1.3] }}
+      rotation={[0, -Math.PI / 2, 0]}
+      position={[ROOM.halfW - 0.16, y0 - 0.42, (z0 + z1) / 2]}
+      onReady={hideSheers}
+      fallback={<HandBuiltCurtains />}
+    />
   )
 }

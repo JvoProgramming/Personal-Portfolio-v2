@@ -13,6 +13,8 @@ import { SCREEN_POS } from './layout'
 import { Computer, Desk } from './objects/Desk'
 import { Lamp } from './objects/Lamp'
 import { Mochi } from './objects/Mochi'
+import { Toys } from './play/Toys'
+import { Bed, Headphones, LedStrip } from './objects/Bedroom'
 import { Structure } from './objects/Structure'
 import { WindowSky } from './objects/WindowSky'
 import { isCoarsePointer } from '../lib/env'
@@ -86,6 +88,10 @@ function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: ()
       <TennisGear />
       <GuitarController />
       <Mochi />
+      <Toys />
+      <Bed />
+      <Headphones />
+      <LedStrip lighting={lighting} />
       <FairyLights lighting={lighting} />
       <WallClock />
       <Plant />
