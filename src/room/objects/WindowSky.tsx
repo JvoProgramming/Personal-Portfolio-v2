@@ -1,10 +1,12 @@
 import { useTexture } from '@react-three/drei'
-import { Suspense, useMemo } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { Suspense, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { canvasTexture } from '../textures'
 import type { Lighting } from '../time'
 import { useInteractive } from '../interactive'
 import { WINDOW, seeded } from '../layout'
+import { shade } from '../shade'
 
 const SKY_X = 5
 
@@ -158,6 +160,11 @@ export function WindowSky({ lighting }: { lighting: Lighting }) {
   const skyline = skylineTexture()
   const lights = cityLightsTexture()
   const sunTarget = useMemo(() => new THREE.Object3D(), [])
+  const sun = useRef<THREE.DirectionalLight>(null)
+  // The slats already throw striped shadows; this also fades the light overall as they shut.
+  useFrame(() => {
+    if (sun.current) sun.current.intensity = lighting.sunIntensity * (1 - shade.closed * 0.85)
+  })
 
   const skyMaterial = useMemo(
     () =>
@@ -212,6 +219,7 @@ export function WindowSky({ lighting }: { lighting: Lighting }) {
       </mesh>
       <primitive object={sunTarget} position={[0, 0, wz]} />
       <directionalLight
+        ref={sun}
         position={sunPos}
         target={sunTarget}
         color={lighting.sunColor}

@@ -65,3 +65,11 @@ export function squeak() {
   if (!c) return
   chirp(c, c.currentTime, 1800, 2600, 1500, 0.14, 0.1, 'square')
 }
+
+/** The light clatter of blind slats turning. */
+export function rattle() {
+  const c = audio()
+  if (!c) return
+  const t = c.currentTime
+  for (let i = 0; i < 7; i++) chirp(c, t + i * 0.045 + Math.random() * 0.015, 3200, 4200 + Math.random() * 800, 2600, 0.03, 0.025, 'square')
+}

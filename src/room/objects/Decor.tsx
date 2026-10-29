@@ -54,7 +54,7 @@ export function Posters() {
       <Poster url="/posters/guitar_hero_3_cover.jpg" drawn={posters.rock()} position={[-2.55, 1.6, back]} size={[0.46, 0.69]} />
       <Poster url="/posters/spider_verse_into_poster.png" drawn={posters.spidey()} position={[-1.75, 1.55, back]} />
       <Poster url="/posters/attack_on_titan_manga_vol1.jpg" drawn={posters.titan()} position={[1.75, 1.6, back]} />
-      <Poster url="/posters/invincible_comic_issue75.jpg" drawn={posters.invincible()} position={[right, 1.6, -2.05]} rotation={[0, -Math.PI / 2, 0]} size={[0.5, 0.77]} />
+      <Poster url="/posters/invincible_comic_issue75.jpg" drawn={posters.invincible()} position={[right, 1.6, -2.22]} rotation={[0, -Math.PI / 2, 0]} size={[0.44, 0.68]} />
     </group>
   )
 }

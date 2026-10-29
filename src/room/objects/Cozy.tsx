@@ -228,7 +228,7 @@ export function Curtains() {
   return (
     <Model
       url="/models/curtains_red_tieback.glb"
-      fit={{ box: [0.28, 1.85, z1 - z0 + 1.3] }}
+      fit={{ box: [0.28, 1.85, z1 - z0 + 0.9] }}
       rotation={[0, -Math.PI / 2, 0]}
       position={[ROOM.halfW - 0.16, y0 - 0.42, (z0 + z1) / 2]}
       onReady={hideSheers}
