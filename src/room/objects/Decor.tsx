@@ -1,30 +1,60 @@
+import { useTexture } from '@react-three/drei'
+import { SRGBColorSpace } from 'three'
 import type * as THREE from 'three'
 import { useOs } from '../../os/store'
 import { useInteractive } from '../interactive'
 import { useRoom } from '../roomStore'
 import { FRAME_PHOTOS, gameBoyScreen, photoTexture, posters, type FramePhoto } from '../textures'
 import { DESK, ROOM } from '../layout'
-import { Model } from '../Model'
+import { Model, Upgrade } from '../Model'
 
-function Poster({ map, position, rotation = [0, 0, 0], size = [0.6, 0.9] }: { map: THREE.Texture; position: [number, number, number]; rotation?: [number, number, number]; size?: [number, number] }) {
-  const { props } = useInteractive('obj.poster')
+type V3 = [number, number, number]
+
+/** The art itself: a texture on a plane. */
+function PosterArt({ map, size }: { map: THREE.Texture; size: [number, number] }) {
   return (
-    <mesh position={position} rotation={rotation} receiveShadow {...props}>
+    <mesh position={[0, 0, 0.007]} receiveShadow>
       <planeGeometry args={size} />
-      <meshStandardMaterial map={map} roughness={0.85} />
+      <meshStandardMaterial map={map} roughness={0.6} />
     </mesh>
   )
 }
 
+/** Official poster art (fan tribute; copyright belongs to the owners, see public/posters). */
+function OfficialArt({ url, size }: { url: string; size: [number, number] }) {
+  const map = useTexture(url, (t) => {
+    t.colorSpace = SRGBColorSpace
+    t.anisotropy = 4
+  })
+  return <PosterArt map={map} size={size} />
+}
+
+/** A framed poster: official art streams in, with the drawn version shown until then (or if it fails). */
+function Poster({ url, drawn, position, rotation = [0, 0, 0], size = [0.6, 0.9] }: { url: string; drawn: THREE.Texture; position: V3; rotation?: V3; size?: [number, number] }) {
+  const { props } = useInteractive('obj.poster')
+  return (
+    <group position={position} rotation={rotation} {...props}>
+      {/* Thin black frame */}
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[size[0] + 0.03, size[1] + 0.03, 0.012]} />
+        <meshStandardMaterial color="#141418" roughness={0.4} />
+      </mesh>
+      <Upgrade fallback={<PosterArt map={drawn} size={size} />}>
+        <OfficialArt url={url} size={size} />
+      </Upgrade>
+    </group>
+  )
+}
+
 export function Posters() {
-  const back = -ROOM.halfD + 0.005
-  const right = ROOM.halfW - 0.005
+  const back = -ROOM.halfD + 0.008
+  const right = ROOM.halfW - 0.008
   return (
     <group>
-      <Poster map={posters.rock()} position={[-2.55, 1.6, back]} size={[0.46, 0.69]} />
-      <Poster map={posters.spidey()} position={[-1.75, 1.55, back]} />
-      <Poster map={posters.titan()} position={[1.75, 1.6, back]} />
-      <Poster map={posters.invincible()} position={[right, 1.6, -2.05]} rotation={[0, -Math.PI / 2, 0]} size={[0.5, 0.75]} />
+      <Poster url="/posters/guitar_hero_3_cover.jpg" drawn={posters.rock()} position={[-2.55, 1.6, back]} size={[0.46, 0.69]} />
+      <Poster url="/posters/spider_verse_into_poster.png" drawn={posters.spidey()} position={[-1.75, 1.55, back]} />
+      <Poster url="/posters/attack_on_titan_manga_vol1.jpg" drawn={posters.titan()} position={[1.75, 1.6, back]} />
+      <Poster url="/posters/invincible_comic_issue75.jpg" drawn={posters.invincible()} position={[right, 1.6, -2.05]} rotation={[0, -Math.PI / 2, 0]} size={[0.5, 0.77]} />
     </group>
   )
 }

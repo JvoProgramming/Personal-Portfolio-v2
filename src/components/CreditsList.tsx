@@ -28,6 +28,10 @@ export function CreditsList() {
           </li>
         ))}
       </ul>
+      <p className="muted">
+        The posters on the wall are official art from Guitar Hero III (Activision), Spider-Man: Into the Spider-Verse (Sony/Marvel), Attack on Titan (Kodansha, Hajime
+        Isayama) and Invincible (Image Comics, Robert Kirkman), shown as a fan tribute. All rights belong to their owners.
+      </p>
     </div>
   )
 }
