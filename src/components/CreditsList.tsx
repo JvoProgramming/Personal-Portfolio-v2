@@ -1,11 +1,13 @@
 import { MODEL_CREDITS } from '../content/credits'
 
-/** The list of 3D model credits, shared by the Credits window and the /credits page. */
+const LICENSE_URL = { 'CC-BY 4.0': 'https://creativecommons.org/licenses/by/4.0/', 'CC-BY 2.0': 'https://creativecommons.org/licenses/by/2.0/' }
+
+/** The list of 3D model and photo credits, shared by the Credits window and the /credits page. */
 export function CreditsList() {
   return (
     <div className="credits">
       <p>
-        Mochi, the room and everything else were built in code. These models were made by other people and are used under their licenses (changes: compressed, resized and
+        Mochi, the room and everything else were built in code. These models and the night skyline photo were made by other people and are used under their licenses (changes: compressed, resized and
         repositioned):
       </p>
       <ul>
@@ -14,10 +16,22 @@ export function CreditsList() {
             <a href={c.url} target="_blank" rel="noreferrer">
               “{c.title}”
             </a>{' '}
-            by {c.author}, {c.license === 'CC0' ? 'CC0' : <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>} · <span className="muted">{c.usedFor}</span>
+            by {c.author},{' '}
+            {c.license === 'CC0' ? (
+              'CC0'
+            ) : (
+              <a href={LICENSE_URL[c.license]} target="_blank" rel="noreferrer">
+                {c.license.replace('-', ' ')}
+              </a>
+            )}{' '}
+            · <span className="muted">{c.usedFor}</span>
           </li>
         ))}
       </ul>
+      <p className="muted">
+        The posters on the wall are official art from Guitar Hero III (Activision), Spider-Man: Into the Spider-Verse (Sony/Marvel), Attack on Titan (Kodansha, Hajime
+        Isayama) and Invincible (Image Comics, Robert Kirkman), shown as a fan tribute. All rights belong to their owners.
+      </p>
     </div>
   )
 }

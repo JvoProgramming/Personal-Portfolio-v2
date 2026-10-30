@@ -5,7 +5,8 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 
 const DRACO = '/draco/'
 
-export type Fit = { height: number } | { width: number } | { depth: number } | { longest: number }
+/** How to size a model: match one dimension (keeping its proportions), or stretch it to a box. */
+export type Fit = { height: number } | { width: number } | { depth: number } | { longest: number } | { box: [number, number, number] }
 
 export interface ModelProps {
   url: string
@@ -18,10 +19,12 @@ export interface ModelProps {
   /** Called with the prepared scene, e.g. to grab bones or tweak materials. */
   onReady?: (scene: THREE.Group) => void
   shadows?: boolean
+  /** Center the model on its middle instead of sitting it on y = 0 (for things that tumble, like toys). */
+  centered?: boolean
 }
 
 /** Loads a GLB, scales it to real size, sits it on y = 0 centered on x/z, and turns on shadows. */
-export function useModel(url: string, fit: Fit, rotation: [number, number, number] = [0, 0, 0], shadows = true, order: THREE.EulerOrder = 'XYZ') {
+export function useModel(url: string, fit: Fit, rotation: [number, number, number] = [0, 0, 0], shadows = true, order: THREE.EulerOrder = 'XYZ', centered = false) {
   const gltf = useGLTF(url, DRACO, true)
   // Prepared once per mount; the GLTF itself is cached by URL.
   const [prepared] = useState(() => {
@@ -32,13 +35,15 @@ export function useModel(url: string, fit: Fit, rotation: [number, number, numbe
     inner.updateMatrixWorld(true)
     const box = new THREE.Box3().setFromObject(inner)
     const size = box.getSize(new THREE.Vector3())
-    const target =
-      'height' in fit ? fit.height / size.y : 'width' in fit ? fit.width / size.x : 'depth' in fit ? fit.depth / size.z : fit.longest / Math.max(size.x, size.y, size.z)
     const outer = new THREE.Group()
     outer.add(inner)
-    outer.scale.setScalar(target)
+    if ('box' in fit) outer.scale.set(fit.box[0] / size.x, fit.box[1] / size.y, fit.box[2] / size.z)
+    else
+      outer.scale.setScalar(
+        'height' in fit ? fit.height / size.y : 'width' in fit ? fit.width / size.x : 'depth' in fit ? fit.depth / size.z : fit.longest / Math.max(size.x, size.y, size.z),
+      )
     const center = box.getCenter(new THREE.Vector3())
-    inner.position.set(-center.x, -box.min.y, -center.z)
+    inner.position.set(-center.x, centered ? -center.y : -box.min.y, -center.z)
     scene.traverse((o) => {
       const mesh = o as THREE.Mesh
       if (mesh.isMesh) {

@@ -206,13 +206,18 @@ function TennisBag() {
   )
 }
 
-function FeltBall({ rotation = 0 }: { rotation?: number }) {
+export function FeltBall({ rotation = 0 }: { rotation?: number }) {
   return (
     <mesh rotation={[rotation, rotation * 1.7, 0]} castShadow>
       <sphereGeometry args={[0.033, 32, 24]} />
       <meshStandardMaterial map={tennisBallMap()} normalMap={strandNormal(2, 3000)} normalScale={[0.6, 0.6]} roughness={1} />
     </mesh>
   )
+}
+
+/** A tennis ball centered on its middle, for toys that fly around. */
+export function TennisBall() {
+  return <Model url="/models/tennis_ball.glb" fit={{ height: 0.066 }} position={[0, -0.033, 0]} fallback={<FeltBall />} />
 }
 
 function Ball({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
@@ -248,12 +253,6 @@ function BallCan({ position }: { position: [number, number, number] }) {
 
 export function TennisGear() {
   const { props } = useInteractive('obj.tennis')
-  const balls: [number, number, number][] = [
-    [-1.95, 0.033, -1.55],
-    [-1.75, 0.033, -1.35],
-    [-0.9, 0.033, -1.7],
-    [0.9, 0.033, 0.4],
-  ]
   return (
     <group {...props}>
       <group position={[-2.3, 0, -2.18]} rotation={[0, 0.05, 0]}>
@@ -265,12 +264,9 @@ export function TennisGear() {
         <cylinderGeometry args={[0.006, 0.006, 0.03, 8]} />
         <meshStandardMaterial color="#b8bcc2" metalness={0.9} roughness={0.3} />
       </mesh>
-      <group position={[-1.2, 1.13, -ROOM.halfD + 0.035]} rotation={[0, 0, 0.12]}>
+      <group position={[-1.2, 1.13, -ROOM.halfD + 0.035]}>
         <Model url="/models/tennis_racquet.glb" fit={{ height: 0.685 }} position={[0, -0.51, 0]} rotation={[0, RACQUET_TURN, 0]} fallback={<Racquet />} />
       </group>
-      {balls.map((p, i) => (
-        <Ball key={i} position={p} rotation={i * 1.3} />
-      ))}
     </group>
   )
 }

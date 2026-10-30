@@ -13,7 +13,11 @@ import { SCREEN_POS } from './layout'
 import { Computer, Desk } from './objects/Desk'
 import { Lamp } from './objects/Lamp'
 import { Mochi } from './objects/Mochi'
+import { Toys } from './play/Toys'
+import { Bed, Headphones, LedStrip } from './objects/Bedroom'
 import { Structure } from './objects/Structure'
+import { Blinds } from './objects/Blinds'
+import { shade } from './shade'
 import { WindowSky } from './objects/WindowSky'
 import { isCoarsePointer } from '../lib/env'
 import { useRoom } from './roomStore'
@@ -67,11 +71,20 @@ function CameraRig({ onEnter }: { onEnter: () => void }) {
   return null
 }
 
+/** The room's soft fill light. Most of it comes in through the window, so it dims as the blinds shut. */
+function Daylight({ ambient, night }: { ambient: number; night: boolean }) {
+  const ref = useRef<THREE.HemisphereLight>(null)
+  useFrame(() => {
+    if (ref.current) ref.current.intensity = ambient * (1 - shade.closed * (night ? 0.25 : 0.6))
+  })
+  return <hemisphereLight ref={ref} args={['#c9d6ff', '#3a2a20', ambient]} />
+}
+
 function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: () => void; effects: boolean }) {
   return (
     <>
       <color attach="background" args={['#05060c']} />
-      <hemisphereLight args={['#c9d6ff', '#3a2a20', lighting.ambient]} />
+      <Daylight ambient={lighting.ambient} night={lighting.phase === 'night'} />
       <CameraRig onEnter={onEnter} />
       <Structure />
       <WindowSky lighting={lighting} />
@@ -86,11 +99,16 @@ function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: ()
       <TennisGear />
       <GuitarController />
       <Mochi />
+      <Toys />
+      <Bed />
+      <Headphones />
+      <LedStrip lighting={lighting} />
       <FairyLights lighting={lighting} />
       <WallClock />
       <Plant />
       <BeanBag />
       <Curtains />
+      <Blinds lighting={lighting} />
       <Dust lighting={lighting} />
       <Buzzer lighting={lighting} />
       {effects && (

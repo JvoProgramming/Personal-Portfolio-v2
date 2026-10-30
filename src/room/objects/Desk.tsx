@@ -72,24 +72,63 @@ const MOUSE_CABLE = new THREE.TubeGeometry(
   6,
 )
 
+/** The old hand-built mug of tea, shown until the mug model loads. */
+const MUG = (
+  <>
+        <mesh position={[0, 0.045, 0]} castShadow>
+          <cylinderGeometry args={[0.035, 0.032, 0.09, 20]} />
+          <meshStandardMaterial color="#2f6db5" roughness={0.35} />
+        </mesh>
+        <mesh position={[0, 0.088, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.031, 20]} />
+          <meshStandardMaterial color="#6b3d1e" roughness={0.2} />
+        </mesh>
+        <mesh position={[0.04, 0.048, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <torusGeometry args={[0.02, 0.006, 8, 16, Math.PI]} />
+          <meshStandardMaterial color="#2f6db5" roughness={0.35} />
+        </mesh>
+  </>
+)
+
 export function Desk() {
   const { y, z } = DESK
   return (
     <group>
-      <Part pos={[0, y - 0.025, z]} size={[2.0, 0.05, 0.75]} color="#8a6243" rough={0.55} radius={0.012} />
-      {/* Drawer unit with two drawers and handles, plus legs */}
-      <Part pos={[-0.72, (y - 0.05) / 2, z]} size={[0.5, y - 0.05, 0.7]} color="#7a5538" radius={0.01} />
-      {[0.2, 0.47].map((dy) => (
-        <group key={dy}>
-          <Part pos={[-0.72, dy, z + 0.352]} size={[0.44, 0.24, 0.01]} color="#835c3d" rough={0.6} />
-          <Part pos={[-0.72, dy + 0.06, z + 0.362]} size={[0.12, 0.014, 0.014]} color="#c9b48a" rough={0.3} radius={0.006} />
-        </group>
-      ))}
-      <Part pos={[0.96, (y - 0.05) / 2, z - 0.3]} size={[0.05, y - 0.05, 0.05]} color="#6e4d34" />
-      <Part pos={[0.96, (y - 0.05) / 2, z + 0.3]} size={[0.05, y - 0.05, 0.05]} color="#6e4d34" />
+      {/* Desk: a downloaded modern desk with a drawer unit, stretched to fit the wall */}
+      <group position={[0, 0, z]}>
+        <Model
+          url="/models/desk_office_drawers.glb"
+          fit={{ box: [2.0, y, 0.75] }}
+          fallback={
+            <group position={[0, 0, -z]}>
+            <Part pos={[0, y - 0.025, z]} size={[2.0, 0.05, 0.75]} color="#8a6243" rough={0.55} radius={0.012} />
+            {/* Drawer unit with two drawers and handles, plus legs */}
+            <Part pos={[-0.72, (y - 0.05) / 2, z]} size={[0.5, y - 0.05, 0.7]} color="#7a5538" radius={0.01} />
+            {[0.2, 0.47].map((dy) => (
+              <group key={dy}>
+                <Part pos={[-0.72, dy, z + 0.352]} size={[0.44, 0.24, 0.01]} color="#835c3d" rough={0.6} />
+                <Part pos={[-0.72, dy + 0.06, z + 0.362]} size={[0.12, 0.014, 0.014]} color="#c9b48a" rough={0.3} radius={0.006} />
+              </group>
+            ))}
+            <Part pos={[0.96, (y - 0.05) / 2, z - 0.3]} size={[0.05, y - 0.05, 0.05]} color="#6e4d34" />
+            <Part pos={[0.96, (y - 0.05) / 2, z + 0.3]} size={[0.05, y - 0.05, 0.05]} color="#6e4d34" />
+            </group>
+          }
+        />
+      </group>
       {/* Keyboard and mouse */}
-      <Part pos={[0, y + 0.012, z + 0.24]} size={[0.46, 0.024, 0.17]} color="#e6e1d3" radius={0.008} />
-      <Keycaps position={[0, y + 0.028, z + 0.235]} />
+      <group position={[0, y, z + 0.24]}>
+        <Model
+          url="/models/keyboard_mech_logitech.glb"
+          fit={{ width: 0.44 }}
+          fallback={
+            <group position={[0, -y, -z - 0.24]}>
+            <Part pos={[0, y + 0.012, z + 0.24]} size={[0.46, 0.024, 0.17]} color="#e6e1d3" radius={0.008} />
+            <Keycaps position={[0, y + 0.028, z + 0.235]} />
+            </group>
+          }
+        />
+      </group>
       <mesh position={[0.33, y + 0.016, z + 0.24]} scale={[1, 0.6, 1.4]} castShadow>
         <sphereGeometry args={[0.03, 16, 12]} />
         <meshStandardMaterial color="#e6e1d3" />
@@ -103,19 +142,8 @@ export function Desk() {
       </mesh>
       <Part pos={[0.33, y + 0.002, z + 0.24]} size={[0.2, 0.004, 0.18]} color="#2a2a40" radius={0.002} />
       {/* A mug of tea */}
-      <group position={[-0.42, y, z + 0.12]}>
-        <mesh position={[0, 0.045, 0]} castShadow>
-          <cylinderGeometry args={[0.035, 0.032, 0.09, 20]} />
-          <meshStandardMaterial color="#2f6db5" roughness={0.35} />
-        </mesh>
-        <mesh position={[0, 0.088, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[0.031, 20]} />
-          <meshStandardMaterial color="#6b3d1e" roughness={0.2} />
-        </mesh>
-        <mesh position={[0.04, 0.048, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <torusGeometry args={[0.02, 0.006, 8, 16, Math.PI]} />
-          <meshStandardMaterial color="#2f6db5" roughness={0.35} />
-        </mesh>
+      <group position={[-0.42, y, z + 0.12]} rotation={[0, 2.4, 0]}>
+        <Model url="/models/mug_red.glb" fit={{ height: 0.095 }} fallback={<group rotation={[0, -2.4, 0]}>{MUG}</group>} />
       </group>
       {/* Books on the desk */}
       {['#c0392b', '#2e86c1', '#27ae60'].map((c, i) => (
