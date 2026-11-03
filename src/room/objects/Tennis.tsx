@@ -223,7 +223,7 @@ export function TennisBall() {
 function Ball({ position, rotation = 0 }: { position: [number, number, number]; rotation?: number }) {
   return (
     <group position={[position[0], position[1] - 0.033, position[2]]} rotation={[0, rotation * 2, 0]}>
-      <Model url="/models/tennis_ball.glb" fit={{ height: 0.066 }} rotation={[rotation, 0, 0]} fallback={<group position={[0, 0.033, 0]}><FeltBall rotation={rotation} /></group>} />
+      <Model url="/models/tennis_ball.glb" shadows={false} fit={{ height: 0.066 }} rotation={[rotation, 0, 0]} fallback={<group position={[0, 0.033, 0]}><FeltBall rotation={rotation} /></group>} />
     </group>
   )
 }
@@ -234,7 +234,7 @@ function BallCan({ position }: { position: [number, number, number] }) {
     <group position={position}>
       <mesh position={[0, 0.11, 0]} castShadow>
         <cylinderGeometry args={[0.037, 0.037, 0.22, 28, 1, true]} />
-        <meshPhysicalMaterial color="#dfe9f2" transparent opacity={0.45} roughness={0.1} transmission={0.4} side={THREE.DoubleSide} />
+        <meshPhysicalMaterial color="#dfe9f2" transparent opacity={0.4} roughness={0.1} clearcoat={1} depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
       <mesh position={[0, 0.006, 0]}>
         <cylinderGeometry args={[0.038, 0.038, 0.012, 28]} />

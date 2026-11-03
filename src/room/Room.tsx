@@ -112,7 +112,7 @@ function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: ()
       <Dust lighting={lighting} />
       <Buzzer lighting={lighting} />
       {effects && (
-        <EffectComposer>
+        <EffectComposer multisampling={4}>
           <Bloom mipmapBlur luminanceThreshold={0.9} luminanceSmoothing={0.2} intensity={0.9} />
           <Vignette offset={0.25} darkness={0.55} />
         </EffectComposer>
@@ -124,7 +124,7 @@ function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: ()
 export default function Room({ onEnter, lighting }: { onEnter: () => void; lighting: Lighting }) {
   const setHover = useRoom((s) => s.setHover)
   // Start sharp on desktops and lighter on touch devices, then adjust to how fast this GPU really is.
-  const maxDpr = Math.min(window.devicePixelRatio || 1, 1.75)
+  const maxDpr = Math.min(window.devicePixelRatio || 1, 1.5)
   const [dpr, setDpr] = useState(isCoarsePointer() ? 1 : maxDpr)
   const [effects, setEffects] = useState(!isCoarsePointer())
 
