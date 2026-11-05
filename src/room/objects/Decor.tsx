@@ -117,6 +117,7 @@ export function GameBoy() {
       {/* Model stands upright in its file; this group lays it flat on the desk, screen up. */}
       <Model
         url="/models/gameboy_original.glb"
+        shadows={false}
         fit={{ height: 0.148 }}
         position={[0, -0.074, 0]}
         fallback={
@@ -190,6 +191,7 @@ export function Food() {
         <group position={[x - 0.12, top, z - 0.05]}>
           <Model
             url="/models/pizza.glb"
+            shadows={false}
             fit={{ width: 0.36 }}
             fallback={
               <group position={[0, 0.01, 0]}>

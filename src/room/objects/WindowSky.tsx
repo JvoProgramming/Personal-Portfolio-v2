@@ -227,10 +227,11 @@ export function WindowSky({ lighting }: { lighting: Lighting }) {
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0005}
-        shadow-camera-left={-6}
-        shadow-camera-right={6}
-        shadow-camera-top={6}
-        shadow-camera-bottom={-6}
+        // Just big enough for the 6 x 5 m room, so the shadow map's pixels aren't spent on empty space.
+        shadow-camera-left={-4.5}
+        shadow-camera-right={4.5}
+        shadow-camera-top={4.5}
+        shadow-camera-bottom={-4.5}
         shadow-camera-near={1}
         shadow-camera-far={25}
       />

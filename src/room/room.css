@@ -5,6 +5,11 @@
   font-family: Tahoma, 'Segoe UI', sans-serif;
 }
 
+.room--paused {
+  /* Kept alive under the OS while you're on the PC; the canvas stops rendering too. */
+  visibility: hidden;
+}
+
 .room__top {
   position: absolute;
   top: 16px;

@@ -143,7 +143,7 @@ export function Desk() {
       <Part pos={[0.33, y + 0.002, z + 0.24]} size={[0.2, 0.004, 0.18]} color="#2a2a40" radius={0.002} />
       {/* A mug of tea */}
       <group position={[-0.42, y, z + 0.12]} rotation={[0, 2.4, 0]}>
-        <Model url="/models/mug_red.glb" fit={{ height: 0.095 }} fallback={<group rotation={[0, -2.4, 0]}>{MUG}</group>} />
+        <Model url="/models/mug_red.glb" shadows={false} fit={{ height: 0.095 }} fallback={<group rotation={[0, -2.4, 0]}>{MUG}</group>} />
       </group>
       {/* Books on the desk */}
       {['#c0392b', '#2e86c1', '#27ae60'].map((c, i) => (

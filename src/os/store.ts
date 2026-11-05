@@ -29,6 +29,8 @@ export interface OpenAppOptions {
 
 interface OsState {
   stage: Stage
+  /** The 3D room stays mounted (paused) once it has been shown, so coming back to it is instant. */
+  roomVisited: boolean
   user: UserId | null
   windows: WindowState[]
   topZ: number
@@ -55,6 +57,7 @@ let cascade = 0
 
 export const useOs = create<OsState>((set, get) => ({
   stage: canShowRoom() ? 'room' : 'boot',
+  roomVisited: canShowRoom(),
   user: null,
   windows: [],
   topZ: 10,
@@ -62,7 +65,7 @@ export const useOs = create<OsState>((set, get) => ({
   wallpaperOverride: null,
   pendingApp: null,
 
-  setStage: (stage) => set({ stage, startOpen: false }),
+  setStage: (stage) => set((s) => ({ stage, startOpen: false, roomVisited: s.roomVisited || stage === 'room' })),
 
   logIn: (user) => set({ user, stage: 'desktop', windows: [], startOpen: false, wallpaperOverride: null }),
 
