@@ -29,7 +29,7 @@ const HOME = CAM?.length === 6 ? new THREE.Vector3(CAM[0], CAM[1], CAM[2]) : new
 const LOOK = CAM?.length === 6 ? new THREE.Vector3(CAM[3], CAM[4], CAM[5]) : new THREE.Vector3(0.45, 0.95, -1.8)
 const PARALLAX = CAM ? 0 : 1
 
-function CameraRig({ onEnter }: { onEnter: () => void }) {
+function CameraRig({ onEnter, active }: { onEnter: () => void; active: boolean }) {
   const { camera, pointer, size } = useThree()
   const poweringOn = useRoom((s) => s.poweringOn)
   const arrived = useRef(false)
@@ -41,6 +41,16 @@ function CameraRig({ onEnter }: { onEnter: () => void }) {
   // Phones held upright see less of the room, so widen the lens and let a drag pan across it.
   const portrait = aspect < 1
   const fov = aspect < 0.8 ? 72 : aspect < 1.3 ? 62 : 55
+
+  // Coming back from the PC: start up against the monitor and pull back out into the room.
+  useEffect(() => {
+    if (!active || !arrived.current) return
+    arrived.current = false
+    timer.current = 0
+    camera.position.set(SCREEN_POS.x, SCREEN_POS.y, SCREEN_POS.z + 0.32)
+    look.current.copy(SCREEN_POS)
+    camera.lookAt(look.current)
+  }, [active, camera])
 
   useFrame((state, delta) => {
     const cam = state.camera as THREE.PerspectiveCamera
@@ -80,12 +90,12 @@ function Daylight({ ambient, night }: { ambient: number; night: boolean }) {
   return <hemisphereLight ref={ref} args={['#c9d6ff', '#3a2a20', ambient]} />
 }
 
-function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: () => void; effects: boolean }) {
+function Scene({ lighting, onEnter, effects, active }: { lighting: Lighting; onEnter: () => void; effects: boolean; active: boolean }) {
   return (
     <>
       <color attach="background" args={['#05060c']} />
       <Daylight ambient={lighting.ambient} night={lighting.phase === 'night'} />
-      <CameraRig onEnter={onEnter} />
+      <CameraRig onEnter={onEnter} active={active} />
       <Structure />
       <WindowSky lighting={lighting} />
       <Desk />
@@ -121,7 +131,7 @@ function Scene({ lighting, onEnter, effects }: { lighting: Lighting; onEnter: ()
   )
 }
 
-export default function Room({ onEnter, lighting }: { onEnter: () => void; lighting: Lighting }) {
+export default function Room({ onEnter, lighting, active = true }: { onEnter: () => void; lighting: Lighting; active?: boolean }) {
   const setHover = useRoom((s) => s.setHover)
   // Start sharp on desktops and lighter on touch devices, then adjust to how fast this GPU really is.
   const maxDpr = Math.min(window.devicePixelRatio || 1, 1.5)
@@ -137,6 +147,8 @@ export default function Room({ onEnter, lighting }: { onEnter: () => void; light
       flat
       camera={{ position: HOME.toArray(), fov: 55, near: 0.05, far: 40 }}
       dpr={dpr}
+      // Paused while the OS is on screen: no frames drawn, but every model, texture and shader stays loaded.
+      frameloop={active ? 'always' : 'never'}
       onPointerMissed={() => setHover(null)}
       aria-label="Johnny's bedroom in 3D"
     >
@@ -152,7 +164,7 @@ export default function Room({ onEnter, lighting }: { onEnter: () => void; light
           setEffects(false)
         }}
       >
-        <Scene lighting={lighting} onEnter={onEnter} effects={effects} />
+        <Scene lighting={lighting} onEnter={onEnter} effects={effects} active={active} />
       </PerformanceMonitor>
     </Canvas>
   )

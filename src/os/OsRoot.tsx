@@ -11,20 +11,11 @@ import { Welcome } from './Welcome'
 // The room (and three.js with it) only downloads for visitors who will see it.
 const RoomGate = lazy(() => import('../room/RoomGate'))
 
-export default function OsRoot() {
+function Stage() {
   const stage = useOs((s) => s.stage)
-
-  useEffect(() => {
-    document.title = 'Johnny XP'
-  }, [])
-
   switch (stage) {
     case 'room':
-      return (
-        <Suspense fallback={<RoomLoading />}>
-          <RoomGate />
-        </Suspense>
-      )
+      return null
     case 'boot':
       return <Boot />
     case 'welcome':
@@ -34,4 +25,25 @@ export default function OsRoot() {
     case 'off':
       return <ShutDown />
   }
+}
+
+export default function OsRoot() {
+  const inRoom = useOs((s) => s.stage === 'room')
+  const roomVisited = useOs((s) => s.roomVisited)
+
+  useEffect(() => {
+    document.title = 'Johnny XP'
+  }, [])
+
+  return (
+    <>
+      {/* Once loaded, the room is kept (paused) under the OS rather than torn down, so going back is seamless. */}
+      {roomVisited && (
+        <Suspense fallback={inRoom ? <RoomLoading /> : null}>
+          <RoomGate active={inRoom} />
+        </Suspense>
+      )}
+      <Stage />
+    </>
+  )
 }
