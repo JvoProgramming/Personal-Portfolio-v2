@@ -63,7 +63,7 @@ function RoomModal() {
   )
 }
 
-export default function RoomGate() {
+export default function RoomGate({ active = true }: { active?: boolean }) {
   const setStage = useOs((s) => s.setStage)
   const hover = useRoom((s) => s.hover)
   const poweringOn = useRoom((s) => s.poweringOn)
@@ -75,13 +75,13 @@ export default function RoomGate() {
   }
 
   return (
-    <div className="room">
+    <div className={active ? 'room' : 'room room--paused'} aria-hidden={!active}>
       <ErrorBoundary fallback={null} onError={enterOs}>
         <Suspense fallback={<RoomLoading />}>
-          <Room onEnter={enterOs} lighting={lighting} />
+          <Room onEnter={enterOs} lighting={lighting} active={active} />
         </Suspense>
       </ErrorBoundary>
-      {!poweringOn && (
+      {active && !poweringOn && (
         <>
           <div className="room__top">
             <span className="room__clock">
@@ -103,7 +103,7 @@ export default function RoomGate() {
           </a>
         </>
       )}
-      <RoomModal />
+      {active && <RoomModal />}
     </div>
   )
 }

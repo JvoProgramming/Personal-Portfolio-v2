@@ -46,7 +46,7 @@ export function Blinds({ lighting }: { lighting: Lighting }) {
       slat: new THREE.MeshStandardMaterial({ color: '#ece8df', roughness: 0.45, metalness: 0.15, side: THREE.DoubleSide }),
       rail: new THREE.MeshStandardMaterial({ color: '#e2ddd2', roughness: 0.4, metalness: 0.2 }),
       cord: new THREE.MeshStandardMaterial({ color: '#d9d3c4', roughness: 0.9 }),
-      wand: new THREE.MeshPhysicalMaterial({ color: '#f2efe8', roughness: 0.15, transmission: 0.3, thickness: 0.01 }),
+      wand: new THREE.MeshPhysicalMaterial({ color: '#f2efe8', roughness: 0.15, clearcoat: 0.6, transparent: true, opacity: 0.8 }),
     }),
     [],
   )

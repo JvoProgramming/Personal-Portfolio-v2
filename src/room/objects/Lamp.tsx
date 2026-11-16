@@ -178,6 +178,8 @@ export function Lamp() {
         distance={4}
         color="#ffc777"
         castShadow
+        // Re-rendering this shadow every frame is a full extra pass over the room, so skip it while the lamp is off.
+        shadow-autoUpdate={lampOn}
         shadow-mapSize={[512, 512]}
         shadow-bias={-0.001}
       />
