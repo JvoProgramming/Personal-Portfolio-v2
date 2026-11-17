@@ -91,7 +91,7 @@ function BookRow({ position, rotation = [0, 0, 0], width, height, depth, seed, l
   }, [books, width, depth])
 
   return (
-    <instancedMesh ref={ref} args={[undefined, undefined, books.length]} position={position} rotation={rotation} castShadow receiveShadow>
+    <instancedMesh ref={ref} args={[undefined, undefined, books.length]} position={position} rotation={rotation} receiveShadow>
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial roughness={0.75} />
     </instancedMesh>
@@ -122,13 +122,13 @@ export function CubeShelf() {
       </group>
       {/* A small succulent in the middle cubby, and one on top */}
       <group position={[0.02, floors[0], cols[1]]}>
-        <Model url="/models/ph_potted_plant_04.glb" fit={{ height: 0.24 }} fallback={null} />
+        <Model url="/models/ph_potted_plant_04.glb" fit={{ height: 0.24 }} shadows={false} fallback={null} />
       </group>
       <group position={[0, H, 0.3]}>
-        <Model url="/models/snake_plant.glb" fit={{ height: 0.42 }} fallback={null} />
+        <Model url="/models/snake_plant.glb" fit={{ height: 0.42 }} shadows={false} fallback={null} />
       </group>
       <group position={[0, H, -0.25]}>
-        <Model url="/models/books_encyclopedia_set.glb" fit={{ longest: 0.34 }} rotation={[0, Math.PI / 2, 0]} fallback={null} />
+        <Model url="/models/books_encyclopedia_set.glb" fit={{ longest: 0.34 }} shadows={false} rotation={[0, Math.PI / 2, 0]} fallback={null} />
       </group>
     </group>
   )
@@ -174,19 +174,19 @@ export function MediaConsole() {
   const tvScale = tvW / 0.4
   return (
     <group position={[0.15, 0, z]} rotation={[0, Math.PI, 0]}>
-      <Model url="/models/ph_modern_wooden_cabinet.glb" fit={{ width: W }} fallback={<mesh position={[0, h / 2, 0]} castShadow receiveShadow><boxGeometry args={[W, h, 0.34]} /><meshStandardMaterial color="#5b3a26" /></mesh>} />
+      <Model url="/models/ph_modern_wooden_cabinet.glb" fit={{ width: W }} shadows={false} fallback={<mesh position={[0, h / 2, 0]} castShadow receiveShadow><boxGeometry args={[W, h, 0.34]} /><meshStandardMaterial color="#5b3a26" /></mesh>} />
       <group position={[-0.32, h, 0.02]} {...props}>
         <Model url="/models/ph_television_02.glb" fit={{ width: tvW }} fallback={<mesh position={[0, 0.27, 0]}><boxGeometry args={[tvW, 0.53, 0.42]} /><meshStandardMaterial color="#2a2a2a" /></mesh>} />
-        {/* The glowing picture sits just in front of the model's glass */}
-        <mesh position={[-0.035 * tvScale, 0.235 * tvScale, 0.14 * tvScale]}>
-          <planeGeometry args={[0.25 * tvScale, 0.19 * tvScale]} />
+        {/* The glowing picture sits just in front of the model's glass (the model is centered front to back) */}
+        <mesh position={[0, 0.268 * tvScale, 0.176 * tvScale]}>
+          <planeGeometry args={[0.31 * tvScale, 0.225 * tvScale]} />
           <meshBasicMaterial ref={screen} map={tvScreen()} toneMapped={false} />
         </mesh>
       </group>
       <group position={[0.42, h, 0]}>
-        <Model url="/models/ph_ceramic_vase_01.glb" fit={{ height: 0.34 }} fallback={null} />
+        <Model url="/models/ph_ceramic_vase_01.glb" fit={{ height: 0.34 }} shadows={false} fallback={null} />
       </group>
-      <group position={[0.15, h, 0.03]} rotation={[0, -0.2, 0]}>
+      <group position={[0.15, h, 0.03]} rotation={[0, Math.PI - 0.2, 0]}>
         <Model url="/models/ph_alarm_clock_01.glb" fit={{ height: 0.13 }} shadows={false} fallback={null} />
       </group>
       {/* Blue TV light on the wall behind */}
@@ -201,7 +201,7 @@ export function Nightstand() {
     <group position={[ROOM.halfW - 0.3, 0, 1.47]} rotation={[0, -Math.PI / 2, 0]}>
       <Model url="/models/ph_side_table_01.glb" fit={{ height: 0.55 }} fallback={<mesh position={[0, 0.27, 0]} castShadow><boxGeometry args={[0.55, 0.55, 0.45]} /><meshStandardMaterial color="#a8763f" /></mesh>} />
       <group position={[0.12, 0.55, 0.02]}>
-        <Model url="/models/books_encyclopedia_set.glb" fit={{ longest: 0.22 }} rotation={[0, 0, Math.PI / 2]} fallback={null} />
+        <Model url="/models/books_encyclopedia_set.glb" fit={{ longest: 0.22 }} shadows={false} rotation={[0, 0, Math.PI / 2]} fallback={null} />
       </group>
     </group>
   )
@@ -211,20 +211,17 @@ export function Nightstand() {
 export function BedPillows() {
   return (
     <group position={[ROOM.halfW - 0.3, 0.47, 0.69]} rotation={[0, -Math.PI / 2, 0]}>
-      <Model url="/models/ph_throw_pillows_01.glb" fit={{ width: 0.72 }} fallback={null} />
+      <Model url="/models/ph_throw_pillows_01.glb" fit={{ width: 0.72 }} shadows={false} fallback={null} />
     </group>
   )
 }
 
-/** Plants: a big-leafed one by the console, and Mochi's toy tray by her bed. */
+/** Plants: a big-leafed one by the console, and a succulent on the desk. */
 export function Greenery() {
   return (
     <group>
       <group position={[1.35, 0, ROOM.halfD - 0.35]}>
-        <Model url="/models/ph_potted_plant_02.glb" fit={{ height: 0.95 }} rotation={[0, 2.2, 0]} fallback={null} />
-      </group>
-      <group position={[-2.68, 0, -0.62]} rotation={[0, 1.3, 0]}>
-        <Model url="/models/ph_wicker_basket_01.glb" fit={{ width: 0.44 }} fallback={null} />
+        <Model url="/models/ph_potted_plant_02.glb" fit={{ height: 0.95 }} shadows={false} rotation={[0, 2.2, 0]} fallback={null} />
       </group>
       {/* A little plant on the desk, by the headphones */}
       <group position={[0.64, DESK.y, DESK.z - 0.22]}>

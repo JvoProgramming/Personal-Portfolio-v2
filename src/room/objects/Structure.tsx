@@ -37,14 +37,11 @@ function usePlaster() {
 }
 
 function useFloor() {
-  const [map, normal, rough] = useTexture([
-    '/textures/herringbone_parquet_diff.webp',
-    '/textures/herringbone_parquet_nor_gl.webp',
-    '/textures/herringbone_parquet_rough.webp',
-  ])
+  // A single, fairly matte roughness: the scanned roughness map made lamps reflect in the floor like puddles.
+  const [map, normal] = useTexture(['/textures/herringbone_parquet_diff.webp', '/textures/herringbone_parquet_nor_gl.webp'])
   return useMemo(() => {
-    const [m, n, r] = [map.clone(), normal.clone(), rough.clone()]
-    for (const t of [m, n, r]) {
+    const [m, n] = [map.clone(), normal.clone()]
+    for (const t of [m, n]) {
       t.wrapS = t.wrapT = THREE.RepeatWrapping
       // One tile of the texture covers about 1.5 m, so the herringbone reads at a real scale.
       t.repeat.set(ROOM.halfW * 2 / 1.5, (ROOM.halfD * 2 + 1) / 1.5)
@@ -52,8 +49,8 @@ function useFloor() {
       t.needsUpdate = true
     }
     m.colorSpace = THREE.SRGBColorSpace
-    return new THREE.MeshStandardMaterial({ map: m, normalMap: n, roughnessMap: r, roughness: 1.6, normalScale: new THREE.Vector2(0.6, 0.6), color: '#e8d6c4' })
-  }, [map, normal, rough])
+    return new THREE.MeshStandardMaterial({ map: m, normalMap: n, roughness: 0.74, normalScale: new THREE.Vector2(0.6, 0.6), color: '#e8d6c4' })
+  }, [map, normal])
 }
 
 type Make = (w: number, h: number) => THREE.Material
