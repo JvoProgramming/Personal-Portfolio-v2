@@ -166,3 +166,47 @@
     bottom: 52px;
   }
 }
+
+/* The room's overlay text and buttons fade out as the camera flies into the PC. */
+.room__hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.room__hud .room__actions,
+.room__hud .room__credits {
+  pointer-events: auto;
+}
+
+.room__hud--off {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.25s ease,
+    visibility 0s 0.25s;
+}
+
+/* Black veil the camera fades in at the end of the fly-in (so the boot screen follows without a cut) and out on the way back. */
+.room__veil {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* First-person crosshair while sitting at the desk. */
+.room__crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 85%);
+  box-shadow: 0 0 0 1.5px rgb(0 0 0 / 55%);
+  pointer-events: none;
+}

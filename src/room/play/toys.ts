@@ -55,7 +55,32 @@ export const toys: Toy[] = START.map(([kind, x, z], id) => ({
 }))
 
 /** Bumped on each throw; Mochi watches it to know when to chase. */
-export const play = { throws: 0, lastThrown: -1 as number, held: -1 as number }
+export const play = {
+  throws: 0,
+  lastThrown: -1 as number,
+  held: -1 as number,
+  /** Where Mochi brings toys back to: the rug in front of you, or beside the chair when you're sitting at the desk. */
+  dropSpot: new THREE.Vector3(-0.2, 0, 0.35),
+  /** Where you are, so she can look at you. */
+  viewer: new THREE.Vector3(-0.55, 0, 2.25),
+}
+
+/** Moves where Mochi brings toys (and looks) between the room view and the desk chair. */
+export function setSeated(seated: boolean) {
+  if (seated) {
+    play.dropSpot.set(-0.2, 0, -1.05)
+    play.viewer.set(0.36, 0, -1.15)
+  } else {
+    play.dropSpot.set(-0.2, 0, 0.35)
+    play.viewer.set(-0.55, 0, 2.25)
+  }
+}
+
+/** "Mochi, fetch!" She runs for this toy where it lies and brings it back, same as after a throw. */
+export function fetchToy(t: Toy) {
+  play.lastThrown = t.id
+  play.throws++
+}
 
 const axis = new THREE.Vector3()
 const turn = new THREE.Quaternion()

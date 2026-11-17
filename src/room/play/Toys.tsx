@@ -7,7 +7,9 @@ import { Model } from '../Model'
 import { TennisBall } from '../objects/Tennis'
 import { bake, cone, ellipsoid, mixColor, sphere, union } from '../sdf'
 import { squeak } from './sound'
-import { grab, release, toys, updateToys, type Toy, type ToyKind } from './toys'
+import { pointerDrag } from '../look'
+import { useRoom } from '../roomStore'
+import { fetchToy, grab, release, toys, updateToys, type Toy, type ToyKind } from './toys'
 
 // Press a toy to pick it up, then flick and let go to throw it. A plain click lobs it gently forward.
 
@@ -139,7 +141,8 @@ interface Drag {
 
 function ToyMesh({ toy, onGrab }: { toy: Toy; onGrab: (t: Toy, e: ThreeEvent<PointerEvent>) => void }) {
   const ref = useRef<THREE.Group>(null)
-  const { props } = useInteractive('obj.toy', undefined, 'grab')
+  const seated = useRoom((s) => s.seated)
+  const { props } = useInteractive(seated ? 'obj.toySeated' : 'obj.toy', undefined, seated ? 'pointer' : 'grab')
   const Look = LOOKS[toy.kind]
   useFrame(() => {
     const g = ref.current
@@ -154,7 +157,9 @@ function ToyMesh({ toy, onGrab }: { toy: Toy; onGrab: (t: Toy, e: ThreeEvent<Poi
       onPointerDown={(e) => {
         if (toy.state === 'carried') return
         e.stopPropagation()
-        onGrab(toy, e)
+        // From the chair, clicking a toy asks Mochi to fetch it for you.
+        if (seated) fetchToy(toy)
+        else onGrab(toy, e)
       }}
     >
       <Look />
@@ -226,6 +231,7 @@ export function Toys() {
   }, [camera, gl])
 
   const onGrab = (toy: Toy, e: ThreeEvent<PointerEvent>) => {
+    pointerDrag.claimed = true
     grab(toy)
     pointer.current = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY }
     drag.current = { toy, trail: [{ ...pointer.current, t: performance.now() / 1000 }] }

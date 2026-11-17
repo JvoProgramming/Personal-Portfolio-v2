@@ -5,6 +5,7 @@ import { useInteractive } from '../interactive'
 import { deform, strandNormal } from '../materials'
 import { keepOut } from '../play/physics'
 import { bark, sigh, yip } from '../play/sound'
+import { pointerDrag } from '../look'
 import { drop, play, toys } from '../play/toys'
 import { bake, chain, cone, ellipsoid, mixColor, scaled, sphere, union } from '../sdf'
 
@@ -12,10 +13,8 @@ const BED = new THREE.Vector3(-1.75, 0, -0.75)
 const REST_HEADING = 0.9
 const WALK = 0.8
 const RUN = 1.7
-/** Where she brings toys back to: on the rug, in front of you. */
-const DROP_SPOT = new THREE.Vector3(-0.2, 0, 0.35)
-/** Where the viewer is, so she can look at you. */
-const VIEWER = new THREE.Vector3(-0.55, 0, 2.25)
+/** Where you are (and where she brings toys) moves with you: see play.viewer and play.dropSpot. */
+const VIEWER = play.viewer
 /** How far ahead of her center her mouth is (meters, at her scale). */
 const REACH = 0.2
 /** She waits this long for another throw before going back to bed. */
@@ -257,6 +256,7 @@ export function Mochi() {
   }, [])
   const startPet = () => {
     const s = state.current
+    pointerDrag.claimed = true
     petting.current = true
     s.nextHeart = 0
     if (s.mode === 'sleep') sigh()
@@ -353,7 +353,7 @@ export function Mochi() {
         break
       }
       case 'return': {
-        const left = goTo(DROP_SPOT, WALK * 1.2)
+        const left = goTo(play.dropSpot, WALK * 1.2)
         moving = left > 0.02
         if (!moving) {
           face(VIEWER)
