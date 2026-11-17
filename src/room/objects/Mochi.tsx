@@ -20,6 +20,10 @@ const VIEWER = new THREE.Vector3(-0.55, 0, 2.25)
 const REACH = 0.2
 /** She waits this long for another throw before going back to bed. */
 const PATIENCE = 12
+/** After a fetch, a pet is her cue that playtime is over: she heads to bed this long after. */
+const PET_BEDTIME = 0.8
+/** Close enough to a spot to count as there (stops her running in place). */
+const ARRIVED = 0.005
 
 type Mode =
   /** Napping in her bed. */
@@ -241,6 +245,8 @@ export function Mochi() {
     /** For noticing when she's stuck behind something. */
     best: Infinity,
     stall: 0,
+    /** On the way to bed but blocked: go via the open rug first. */
+    detour: false,
   })
 
   // Petting: press on her (and keep holding or stroking) for hearts and happy noises.
@@ -261,7 +267,11 @@ export function Mochi() {
     s.nextHeart = 0
     if (s.mode === 'sleep') sigh()
     else yip()
-    if (s.mode === 'wait') s.timer = 0
+    // Done playing: a pet after a fetch sends her back to bed (after a moment to enjoy it).
+    if (s.mode === 'wait' || s.mode === 'stuck') {
+      s.mode = 'wait'
+      s.timer = Math.max(s.timer, PATIENCE - PET_BEDTIME)
+    }
   }
 
   const tmp = useMemo(() => ({ v: new THREE.Vector3(), mouth: new THREE.Vector3(), q: new THREE.Quaternion(), up: new THREE.Vector3(0, 1, 0) }), [])
@@ -292,11 +302,11 @@ export function Mochi() {
       }
     }
 
-    /** Walks (or runs) toward a floor point; returns the distance left. */
+    /** Walks (or runs) toward a floor point; returns how much farther she has to go (0 once there). */
     const goTo = (goal: THREE.Vector3, speed: number, stopAt = 0.02) => {
       const dir = tmp.v.copy(goal).sub(s.pos).setY(0)
       const dist = dir.length()
-      if (dist > stopAt) {
+      if (dist > stopAt + ARRIVED) {
         const want = Math.atan2(dir.x, dir.z)
         let diff = want - s.heading
         diff = Math.atan2(Math.sin(diff), Math.cos(diff))
@@ -307,8 +317,11 @@ export function Mochi() {
         s.pos.z += Math.cos(s.heading) * Math.min(dist - stopAt, speed * delta) * facing
         keepOut(s.pos, 0.12)
         s.phase += delta * (speed > 1 ? 20 : 14)
+        return dist - stopAt
       }
-      return dist
+      // Within a hair of the spot counts as there: otherwise she creeps ever closer
+      // without arriving, and her legs never stop running.
+      return 0
     }
     const face = (p: THREE.Vector3) => {
       let diff = Math.atan2(p.x - s.pos.x, p.z - s.pos.z) - s.heading
@@ -329,8 +342,7 @@ export function Mochi() {
         const dir = tmp.v.copy(toy.pos).sub(s.pos).setY(0)
         const d = dir.length()
         const goal = d > 0.001 ? toy.pos.clone().setY(0).addScaledVector(dir.normalize(), -REACH) : toy.pos.clone().setY(0)
-        const left = goTo(goal, RUN, 0.01)
-        moving = left > 0.01
+        moving = goTo(goal, RUN, 0.01) > 0
         const reach = Math.hypot(tmp.mouth.x - toy.pos.x, tmp.mouth.z - toy.pos.z)
         // Notice when walking isn't getting her closer (something's in the way).
         if (reach < s.best - 0.01) {
@@ -353,8 +365,7 @@ export function Mochi() {
         break
       }
       case 'return': {
-        const left = goTo(DROP_SPOT, WALK * 1.2)
-        moving = left > 0.02
+        moving = goTo(DROP_SPOT, WALK * 1.2) > 0
         if (!moving) {
           face(VIEWER)
           if (s.carry >= 0) {
@@ -380,12 +391,39 @@ export function Mochi() {
       case 'wait': {
         s.timer += delta
         face(VIEWER)
-        if (s.timer > PATIENCE) s.mode = 'bed'
+        if (s.timer > PATIENCE) {
+          s.mode = 'bed'
+          s.timer = 0
+          s.best = Infinity
+          s.stall = 0
+          s.detour = false
+        }
         break
       }
       case 'bed': {
-        const left = goTo(BED, WALK)
-        moving = left > 0.02
+        // Last resort if she's boxed in somewhere: she always makes it home.
+        s.timer += delta
+        if (s.timer > 12) s.pos.copy(BED)
+        if (s.detour) {
+          // Something was in the way (she was behind the desk or the bed): out to the rug first.
+          if (goTo(DROP_SPOT, WALK * 1.4) > 0) {
+            moving = true
+            break
+          }
+          s.detour = false
+          s.best = Infinity
+          s.stall = 0
+        }
+        const left = goTo(BED, WALK * 1.4)
+        moving = left > 0
+        if (left < s.best - 0.01) {
+          s.best = left
+          s.stall = 0
+        } else if (moving) s.stall += delta
+        if (s.stall > 0.8) {
+          s.detour = true
+          s.stall = 0
+        }
         if (!moving) {
           let diff = REST_HEADING - s.heading
           diff = Math.atan2(Math.sin(diff), Math.cos(diff))
