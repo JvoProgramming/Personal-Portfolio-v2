@@ -1,6 +1,8 @@
 import { PerformanceMonitor } from '@react-three/drei'
 import { Canvas, events as createPointerEvents, useFrame, useThree } from '@react-three/fiber'
-import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
+import { Bloom, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing'
+import { ToneMappingMode } from 'postprocessing'
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Buzzer, Dust } from './objects/Ambience'
@@ -15,7 +17,8 @@ import { Computer, Desk } from './objects/Desk'
 import { Lamp } from './objects/Lamp'
 import { Mochi } from './objects/Mochi'
 import { Toys } from './play/Toys'
-import { Bed, Headphones, LedStrip } from './objects/Bedroom'
+import { Bed, Headphones } from './objects/Bedroom'
+import { BedPillows, CubeShelf, DeskGlow, Greenery, MediaConsole, Nightstand, Pendant } from './objects/Furnishings'
 import { Structure } from './objects/Structure'
 import { Blinds } from './objects/Blinds'
 import { shade } from './shade'
@@ -274,6 +277,30 @@ function CameraRig({ onEnter, active }: { onEnter: () => void; active: boolean }
   return null
 }
 
+/**
+ * A soft studio-style environment for reflections, so wood, brass and glass catch a little light instead of
+ * looking flat. Built once from a tiny procedural scene (no download) and kept dim, since the real lights
+ * should do the shaping.
+ */
+function Reflections({ lighting }: { lighting: Lighting }) {
+  const get = useThree((s) => s.get)
+  useEffect(() => {
+    const { gl, scene } = get()
+    const pmrem = new THREE.PMREMGenerator(gl)
+    const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
+    scene.environment = env
+    pmrem.dispose()
+    return () => {
+      scene.environment = null
+      env.dispose()
+    }
+  }, [get])
+  useEffect(() => {
+    get().scene.environmentIntensity = lighting.phase === 'night' ? 0.12 : lighting.phase === 'day' ? 0.35 : 0.22
+  }, [get, lighting])
+  return null
+}
+
 /** The room's soft fill light. Most of it comes in through the window, so it dims as the blinds shut. */
 function Daylight({ ambient, night }: { ambient: number; night: boolean }) {
   const ref = useRef<THREE.HemisphereLight>(null)
@@ -287,6 +314,7 @@ function Scene({ lighting, onEnter, effects, active }: { lighting: Lighting; onE
   return (
     <>
       <color attach="background" args={['#05060c']} />
+      <Reflections lighting={lighting} />
       <Daylight ambient={lighting.ambient} night={lighting.phase === 'night'} />
       <CameraRig onEnter={onEnter} active={active} />
       <Structure />
@@ -305,7 +333,13 @@ function Scene({ lighting, onEnter, effects, active }: { lighting: Lighting; onE
       <Toys />
       <Bed />
       <Headphones />
-      <LedStrip lighting={lighting} />
+      <DeskGlow lighting={lighting} />
+      <CubeShelf />
+      <MediaConsole />
+      <Nightstand />
+      <BedPillows />
+      <Greenery />
+      <Pendant lighting={lighting} />
       <FairyLights lighting={lighting} />
       <WallClock />
       <Plant />
@@ -316,8 +350,9 @@ function Scene({ lighting, onEnter, effects, active }: { lighting: Lighting; onE
       <Buzzer lighting={lighting} />
       {effects && (
         <EffectComposer multisampling={4}>
-          <Bloom mipmapBlur luminanceThreshold={0.9} luminanceSmoothing={0.2} intensity={0.9} />
-          <Vignette offset={0.25} darkness={0.55} />
+          <Bloom mipmapBlur luminanceThreshold={0.9} luminanceSmoothing={0.2} intensity={0.8} />
+          <Vignette offset={0.3} darkness={0.5} />
+          <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
         </EffectComposer>
       )}
     </>
@@ -336,8 +371,9 @@ export default function Room({ onEnter, lighting, active = true }: { onEnter: ()
   return (
     <Canvas
       shadows="percentage"
-      // No tone mapping, so the room looks the same with or without the post effects.
-      flat
+      // Filmic tone mapping: bright lamps roll off softly instead of clipping. The post effects apply the same
+      // curve themselves (the renderer skips it when drawing into their buffers), so both paths match.
+      gl={{ toneMapping: THREE.ACESFilmicToneMapping }}
       camera={{ position: HOME.toArray(), fov: 55, near: 0.05, far: 40 }}
       dpr={dpr}
       // Paused while the OS is on screen: no frames drawn, but every model, texture and shader stays loaded.

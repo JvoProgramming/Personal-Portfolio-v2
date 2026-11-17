@@ -13,9 +13,9 @@ type V3 = [number, number, number]
 /** The art itself: a texture on a plane. */
 function PosterArt({ map, size }: { map: THREE.Texture; size: [number, number] }) {
   return (
-    <mesh position={[0, 0, 0.007]} receiveShadow>
+    <mesh position={[0, 0, 0.018]} receiveShadow>
       <planeGeometry args={size} />
-      <meshStandardMaterial map={map} roughness={0.6} />
+      <meshStandardMaterial map={map} roughness={0.5} />
     </mesh>
   )
 }
@@ -34,10 +34,14 @@ function Poster({ url, drawn, position, rotation = [0, 0, 0], size = [0.6, 0.9] 
   const { props } = useInteractive('obj.poster')
   return (
     <group position={position} rotation={rotation} {...props}>
-      {/* Thin black frame */}
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[size[0] + 0.03, size[1] + 0.03, 0.012]} />
-        <meshStandardMaterial color="#141418" roughness={0.4} />
+      {/* Slim black frame with a white mat, like a gallery print */}
+      <mesh position={[0, 0, 0.005]} castShadow receiveShadow>
+        <boxGeometry args={[size[0] + 0.13, size[1] + 0.13, 0.022]} />
+        <meshStandardMaterial color="#17171a" roughness={0.35} />
+      </mesh>
+      <mesh position={[0, 0, 0.0165]} receiveShadow>
+        <planeGeometry args={[size[0] + 0.1, size[1] + 0.1]} />
+        <meshStandardMaterial color="#f4f1ea" roughness={0.9} />
       </mesh>
       <Upgrade fallback={<PosterArt map={drawn} size={size} />}>
         <OfficialArt url={url} size={size} />
@@ -49,12 +53,19 @@ function Poster({ url, drawn, position, rotation = [0, 0, 0], size = [0.6, 0.9] 
 export function Posters() {
   const back = -ROOM.halfD + 0.008
   const right = ROOM.halfW - 0.008
+  const front = ROOM.halfD - 0.008
   return (
     <group>
-      <Poster url="/posters/guitar_hero_3_cover.jpg" drawn={posters.rock()} position={[-2.55, 1.6, back]} size={[0.46, 0.69]} />
-      <Poster url="/posters/spider_verse_into_poster.png" drawn={posters.spidey()} position={[-1.75, 1.55, back]} />
-      <Poster url="/posters/attack_on_titan_manga_vol1.jpg" drawn={posters.titan()} position={[1.75, 1.6, back]} />
-      <Poster url="/posters/invincible_comic_issue75.jpg" drawn={posters.invincible()} position={[right, 1.6, -2.22]} rotation={[0, -Math.PI / 2, 0]} size={[0.44, 0.68]} />
+      {/* All hung with their centers at eye height (about 1.55 m), like a gallery wall */}
+      <Poster url="/posters/guitar_hero_3_cover.jpg" drawn={posters.rock()} position={[-2.42, 1.55, back]} size={[0.44, 0.66]} />
+      <Poster url="/posters/spider_verse_into_poster.png" drawn={posters.spidey()} position={[-1.72, 1.55, back]} size={[0.5, 0.74]} />
+      <Poster url="/posters/attack_on_titan_manga_vol1.jpg" drawn={posters.titan()} position={[1.72, 1.55, back]} size={[0.44, 0.66]} />
+      <Poster url="/posters/invincible_comic_issue75.jpg" drawn={posters.invincible()} position={[right, 1.55, -2.19]} rotation={[0, -Math.PI / 2, 0]} size={[0.4, 0.62]} />
+      {/* Over the bean bag on the left wall */}
+      <Poster url="/posters/guitar_hero_2_cover.jpg" drawn={posters.rock()} position={[-ROOM.halfW + 0.008, 1.55, 0.05]} rotation={[0, Math.PI / 2, 0]} size={[0.5, 0.71]} />
+      {/* A Spider-Man pair over the TV console, across from the desk */}
+      <Poster url="/posters/spider_man_2002_poster.jpg" drawn={posters.spidey()} position={[-0.22, 1.62, front]} rotation={[0, Math.PI, 0]} size={[0.44, 0.66]} />
+      <Poster url="/posters/spider_verse_across_poster.jpg" drawn={posters.spidey()} position={[0.52, 1.62, front]} rotation={[0, Math.PI, 0]} size={[0.44, 0.66]} />
     </group>
   )
 }
