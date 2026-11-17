@@ -40,7 +40,6 @@ export const MODEL_CREDITS: Credit[] = [
   { title: 'Potted Plant 04', author: 'Poly Haven', url: 'https://polyhaven.com/a/potted_plant_04', license: 'CC0', usedFor: "Succulents" },
   { title: 'Throw Pillows 01', author: 'Poly Haven', url: 'https://polyhaven.com/a/throw_pillows_01', license: 'CC0', usedFor: "Bed pillows" },
   { title: 'Portable Cassette Player', author: 'Poly Haven', url: 'https://polyhaven.com/a/portable_cassette_player', license: 'CC0', usedFor: "Walkman on the shelf" },
-  { title: 'Alarm Clock 01', author: 'Poly Haven', url: 'https://polyhaven.com/a/alarm_clock_01', license: 'CC0', usedFor: "Alarm clock" },
   { title: 'Ceramic Vase 01', author: 'Poly Haven', url: 'https://polyhaven.com/a/ceramic_vase_01', license: 'CC0', usedFor: "Vase" },
   { title: 'Herringbone Parquet (texture)', author: 'Poly Haven', url: 'https://polyhaven.com/a/herringbone_parquet', license: 'CC0', usedFor: "Floor" },
   { title: 'Painted Plaster Wall (texture)', author: 'Poly Haven', url: 'https://polyhaven.com/a/painted_plaster_wall', license: 'CC0', usedFor: "Walls" },

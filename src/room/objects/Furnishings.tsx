@@ -186,9 +186,6 @@ export function MediaConsole() {
       <group position={[0.42, h, 0]}>
         <Model url="/models/ph_ceramic_vase_01.glb" fit={{ height: 0.34 }} shadows={false} fallback={null} />
       </group>
-      <group position={[0.15, h, 0.03]} rotation={[0, Math.PI - 0.2, 0]}>
-        <Model url="/models/ph_alarm_clock_01.glb" fit={{ height: 0.13 }} shadows={false} fallback={null} />
-      </group>
       {/* Blue TV light on the wall behind */}
       <Glow position={[-0.32, h + 0.32, -0.17]} size={[1.3, 1.0]} color="#3d6bff" strength={0.22} />
     </group>
