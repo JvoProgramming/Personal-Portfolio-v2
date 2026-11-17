@@ -91,7 +91,8 @@ export default function RoomGate({ active = true }: { active?: boolean }) {
           <Room onEnter={enterOs} lighting={lighting} active={active} />
         </Suspense>
       </ErrorBoundary>
-      {active && seated && locked && !poweringOn && <div className="room__crosshair" aria-hidden="true" />}
+      {/* Aiming at something you can use turns the dot into a ring, like a hand cursor in a game. */}
+      {active && seated && locked && !poweringOn && <div className={hover ? 'room__crosshair room__crosshair--hot' : 'room__crosshair'} aria-hidden="true" />}
       <div className="room__veil" ref={bindVeil} aria-hidden="true" />
       {active && (
         <div className={poweringOn ? 'room__hud room__hud--off' : 'room__hud'}>
@@ -102,7 +103,7 @@ export default function RoomGate({ active = true }: { active?: boolean }) {
             <LangSwitch className="room__lang" />
           </div>
           <div className="room__label" aria-live="polite">
-            {hover ?? t(seated ? (isCoarsePointer() ? 'room.hintSeatedTouch' : locked ? 'room.hintSeated' : 'room.hintSeatedFree') : isCoarsePointer() ? 'room.hintTouch' : 'room.hint')}
+            {t(seated ? (isCoarsePointer() ? 'room.hintSeatedTouch' : locked ? 'room.hintSeated' : 'room.hintSeatedFree') : isCoarsePointer() ? 'room.hintTouch' : 'room.hint')}
           </div>
           <div className="room__actions">
             {seated && (

@@ -199,6 +199,7 @@
 
 /* First-person crosshair while sitting at the desk. */
 .room__crosshair {
+  box-sizing: border-box;
   position: absolute;
   left: 50%;
   top: 50%;
@@ -209,4 +210,23 @@
   background: rgb(255 255 255 / 85%);
   box-shadow: 0 0 0 1.5px rgb(0 0 0 / 55%);
   pointer-events: none;
+}
+
+.room__crosshair {
+  transition:
+    width 0.12s ease,
+    height 0.12s ease,
+    margin 0.12s ease,
+    background-color 0.12s ease;
+}
+
+.room__crosshair--hot {
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  background: transparent;
+  border: 2px solid #fff;
+  box-shadow:
+    0 0 0 1.5px rgb(0 0 0 / 55%),
+    inset 0 0 0 1.5px rgb(0 0 0 / 35%);
 }

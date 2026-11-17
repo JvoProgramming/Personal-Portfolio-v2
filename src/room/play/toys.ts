@@ -134,6 +134,15 @@ export function release(t: Toy, velocity: THREE.Vector3, now: number) {
   play.throws++
 }
 
+/** Sets a picked-up toy back down where it was, without throwing it. */
+export function putBack(t: Toy, at: THREE.Vector3) {
+  t.state = 'free'
+  t.moving = true
+  t.pos.copy(at)
+  t.vel.set(0, 0, 0)
+  play.held = -1
+}
+
 /** Mochi lets go of a toy at her mouth; it drops and bounces a little. */
 export function drop(t: Toy, at: THREE.Vector3) {
   t.state = 'free'
