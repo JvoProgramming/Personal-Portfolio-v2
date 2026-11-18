@@ -1,8 +1,8 @@
 import { create } from 'zustand'
-import { canShowRoom, isSmallScreen } from '../lib/env'
+import { canShowRoom, canVisitRoom, isSmallScreen } from '../lib/env'
 import type { UserId } from './users'
 
-export type Stage = 'room' | 'boot' | 'welcome' | 'desktop' | 'off'
+export type Stage = 'room' | 'boot' | 'welcome' | 'desktop'
 
 export interface WindowState {
   id: string
@@ -41,6 +41,8 @@ interface OsState {
   setStage: (stage: Stage) => void
   logIn: (user: UserId) => void
   logOff: () => void
+  /** Closes everything and goes back to the room, or restarts the OS where the room can't run. */
+  shutDown: () => void
   setStartOpen: (open: boolean) => void
   openApp: (appId: string, defaultTitle: string, options?: OpenAppOptions) => void
   closeWindow: (id: string) => void
@@ -70,6 +72,20 @@ export const useOs = create<OsState>((set, get) => ({
   logIn: (user) => set({ user, stage: 'desktop', windows: [], startOpen: false, wallpaperOverride: null }),
 
   logOff: () => set({ user: null, stage: 'welcome', windows: [], startOpen: false, wallpaperOverride: null }),
+
+  shutDown: () =>
+    set((s) => {
+      const stage: Stage = canVisitRoom() ? 'room' : 'boot'
+      return {
+        user: null,
+        stage,
+        windows: [],
+        startOpen: false,
+        wallpaperOverride: null,
+        pendingApp: null,
+        roomVisited: s.roomVisited || stage === 'room',
+      }
+    }),
 
   setStartOpen: (startOpen) => set({ startOpen }),
 

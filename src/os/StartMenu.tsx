@@ -8,7 +8,7 @@ import type { UserAccount } from './users'
 const PLACES = new Set(['my-documents', 'recycle-bin', 'contact', 'credits'])
 
 export function StartMenu({ account, apps, onOpen }: { account: UserAccount; apps: AppDefinition[]; onOpen: (app: AppDefinition) => void }) {
-  const { logOff, setStage } = useOs.getState()
+  const { logOff, shutDown } = useOs.getState()
   const t = useT()
   const appTitle = useAppTitle()
   const programs = apps.filter((a) => !PLACES.has(a.id))
@@ -68,7 +68,7 @@ export function StartMenu({ account, apps, onOpen }: { account: UserAccount; app
         <button type="button" role="menuitem" onClick={logOff}>
           <span aria-hidden="true">🔑</span> {t('start.logOff')}
         </button>
-        <button type="button" role="menuitem" onClick={() => setStage('off')}>
+        <button type="button" role="menuitem" onClick={shutDown}>
           <span aria-hidden="true">⏻</span> {t('start.turnOff')}
         </button>
       </footer>
