@@ -4,7 +4,6 @@ import './os.css'
 import { Boot } from './Boot'
 import { Desktop } from './Desktop'
 import { RoomLoading } from '../room/RoomLoading'
-import { ShutDown } from './ShutDown'
 import { useOs } from './store'
 import { Welcome } from './Welcome'
 
@@ -22,8 +21,6 @@ function Stage() {
       return <Welcome />
     case 'desktop':
       return <Desktop />
-    case 'off':
-      return <ShutDown />
   }
 }
 

@@ -7,6 +7,7 @@ import { USERS } from './users'
 export function Welcome() {
   const logIn = useOs((s) => s.logIn)
   const setStage = useOs((s) => s.setStage)
+  const shutDown = useOs((s) => s.shutDown)
   const t = useT()
 
   return (
@@ -37,7 +38,7 @@ export function Welcome() {
         </ul>
       </main>
       <div className="welcome__band welcome__band--bottom">
-        <button type="button" className="welcome__power" onClick={() => setStage('off')}>
+        <button type="button" className="welcome__power" onClick={shutDown}>
           <span aria-hidden="true">⏻</span> {t('welcome.turnOff')}
         </button>
         <div className="welcome__links">
