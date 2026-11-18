@@ -8,6 +8,8 @@ import { useRoom } from './roomStore'
 import { FRAME_PHOTOS, gameBoyScreen, photoTexture } from './textures'
 import { getLighting } from './time'
 import { RoomLoading } from './RoomLoading'
+import { bindVeil, setVeil } from './look'
+import { setSeated } from './play/toys'
 import './room.css'
 
 // The 3D code is its own chunk. If it fails to load or crashes, we fall through to the OS.
@@ -67,12 +69,20 @@ export default function RoomGate({ active = true }: { active?: boolean }) {
   const setStage = useOs((s) => s.setStage)
   const hover = useRoom((s) => s.hover)
   const poweringOn = useRoom((s) => s.poweringOn)
+  const seated = useRoom((s) => s.seated)
+  const locked = useRoom((s) => s.locked)
+  const stand = useRoom((s) => s.stand)
   const [lighting] = useState(getLighting)
   const t = useT()
   const enterOs = () => {
+    // Stay black under the OS, so coming back fades in from the screen instead of popping.
+    setVeil(1)
     useRoom.setState({ poweringOn: false, modal: null, hover: null })
     setStage('boot')
   }
+
+  // Mochi brings toys to wherever you are: the rug, or beside the chair.
+  useEffect(() => setSeated(seated), [seated])
 
   return (
     <div className={active ? 'room' : 'room room--paused'} aria-hidden={!active}>
@@ -81,8 +91,11 @@ export default function RoomGate({ active = true }: { active?: boolean }) {
           <Room onEnter={enterOs} lighting={lighting} active={active} />
         </Suspense>
       </ErrorBoundary>
-      {active && !poweringOn && (
-        <>
+      {/* Aiming at something you can use turns the dot into a ring, like a hand cursor in a game. */}
+      {active && seated && locked && !poweringOn && <div className={hover ? 'room__crosshair room__crosshair--hot' : 'room__crosshair'} aria-hidden="true" />}
+      <div className="room__veil" ref={bindVeil} aria-hidden="true" />
+      {active && (
+        <div className={poweringOn ? 'room__hud room__hud--off' : 'room__hud'}>
           <div className="room__top">
             <span className="room__clock">
               {t('room.laTime')} · {lighting.label}
@@ -90,9 +103,14 @@ export default function RoomGate({ active = true }: { active?: boolean }) {
             <LangSwitch className="room__lang" />
           </div>
           <div className="room__label" aria-live="polite">
-            {hover ?? t(isCoarsePointer() ? 'room.hintTouch' : 'room.hint')}
+            {t(seated ? (isCoarsePointer() ? 'room.hintSeatedTouch' : locked ? 'room.hintSeated' : 'room.hintSeatedFree') : isCoarsePointer() ? 'room.hintTouch' : 'room.hint')}
           </div>
           <div className="room__actions">
+            {seated && (
+              <button type="button" onClick={stand}>
+                {t('room.stand')}
+              </button>
+            )}
             <button type="button" onClick={enterOs}>
               {t('room.skipDesktop')}
             </button>
@@ -101,7 +119,7 @@ export default function RoomGate({ active = true }: { active?: boolean }) {
           <a className="room__credits" href="/credits">
             {t('room.credits')}
           </a>
-        </>
+        </div>
       )}
       {active && <RoomModal />}
     </div>

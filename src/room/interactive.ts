@@ -1,6 +1,7 @@
 import type { ThreeEvent } from '@react-three/fiber'
 import { useEffect, useState } from 'react'
 import { useT, type TKey } from '../lib/i18n'
+import { wasDrag } from './look'
 import { useRoom } from './roomStore'
 
 /** Pointer props for a clickable object: pointer cursor plus a label in the room overlay. */
@@ -32,6 +33,8 @@ export function useInteractive(label: TKey, onClick?: () => void, cursor?: strin
       onClick: onClick
         ? (e: ThreeEvent<MouseEvent>) => {
             e.stopPropagation()
+            // Looking around from the chair ends with a click on whatever is under the pointer; that's not a click.
+            if (wasDrag()) return
             onClick()
           }
         : undefined,

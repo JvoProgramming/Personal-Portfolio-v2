@@ -1350,3 +1350,16 @@ body {
   font-size: 13px;
   margin: 14px 0 4px;
 }
+
+/* Coming from the room's fade to black: the logo eases in instead of popping. */
+.boot__logo,
+.boot__bar {
+  animation: boot-in 0.6s ease-out both;
+}
+
+@keyframes boot-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}

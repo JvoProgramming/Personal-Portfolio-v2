@@ -5,6 +5,7 @@ import { useInteractive } from '../interactive'
 import { deform, strandNormal } from '../materials'
 import { keepOut } from '../play/physics'
 import { bark, sigh, yip } from '../play/sound'
+import { pointerDrag } from '../look'
 import { drop, play, toys } from '../play/toys'
 import { bake, chain, cone, ellipsoid, mixColor, scaled, sphere, union } from '../sdf'
 
@@ -12,10 +13,10 @@ const BED = new THREE.Vector3(-1.75, 0, -0.75)
 const REST_HEADING = 0.9
 const WALK = 0.8
 const RUN = 1.7
-/** Where she brings toys back to: on the rug, in front of you. */
-const DROP_SPOT = new THREE.Vector3(-0.2, 0, 0.35)
-/** Where the viewer is, so she can look at you. */
-const VIEWER = new THREE.Vector3(-0.55, 0, 2.25)
+/** Where you are (and where she brings toys) moves with you: see play.viewer and play.dropSpot. */
+const VIEWER = play.viewer
+/** Open floor on the rug: her way around when the desk or bed is between her and her bed. */
+const RUG = new THREE.Vector3(-0.2, 0, 0.35)
 /** How far ahead of her center her mouth is (meters, at her scale). */
 const REACH = 0.2
 /** She waits this long for another throw before going back to bed. */
@@ -263,6 +264,7 @@ export function Mochi() {
   }, [])
   const startPet = () => {
     const s = state.current
+    pointerDrag.claimed = true
     petting.current = true
     s.nextHeart = 0
     if (s.mode === 'sleep') sigh()
@@ -365,7 +367,7 @@ export function Mochi() {
         break
       }
       case 'return': {
-        moving = goTo(DROP_SPOT, WALK * 1.2) > 0
+        moving = goTo(play.dropSpot, WALK * 1.2) > 0
         if (!moving) {
           face(VIEWER)
           if (s.carry >= 0) {
@@ -406,7 +408,7 @@ export function Mochi() {
         if (s.timer > 12) s.pos.copy(BED)
         if (s.detour) {
           // Something was in the way (she was behind the desk or the bed): out to the rug first.
-          if (goTo(DROP_SPOT, WALK * 1.4) > 0) {
+          if (goTo(RUG, WALK * 1.4) > 0) {
             moving = true
             break
           }

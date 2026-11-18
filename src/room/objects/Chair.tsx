@@ -3,6 +3,9 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import { useInteractive } from '../interactive'
+import { pointerDrag, wasDrag } from '../look'
+import { useRoom } from '../roomStore'
+import { SEAT_EYE } from '../layout'
 import { Model } from '../Model'
 import { deform, grainNormal, strandNormal, weaveNormal } from '../materials'
 
@@ -166,8 +169,11 @@ function BaseLeg({ angle, metal, plastic }: { angle: number; metal: THREE.Materi
 /** Office chair you can grab and spin; it keeps spinning a little after you let go. */
 export function Chair() {
   const spinner = useRef<THREE.Group>(null)
-  const drag = useRef<{ x: number; last: number; v: number } | null>(null)
+  const outer = useRef<THREE.Group>(null)
+  const drag = useRef<{ x: number; last: number; v: number; start: number } | null>(null)
   const velocity = useRef(0)
+  const seated = useRoom((s) => s.seated)
+  const sit = useRoom((s) => s.sit)
   const { props } = useInteractive('obj.chair', undefined, 'grab')
 
   const mats = useMemo(() => {
@@ -209,7 +215,8 @@ export function Chair() {
     [],
   )
 
-  useFrame((_, delta) => {
+  useFrame(({ camera }, delta) => {
+    if (outer.current) outer.current.visible = camera.position.distanceToSquared(SEAT_EYE) > 0.5 * 0.5
     if (!spinner.current || drag.current) return
     spinner.current.rotation.y += velocity.current * delta
     velocity.current *= Math.exp(-delta * 1.6)
@@ -218,7 +225,8 @@ export function Chair() {
   const onDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
     ;(e.target as Element).setPointerCapture?.(e.pointerId)
-    drag.current = { x: e.clientX, last: performance.now(), v: 0 }
+    pointerDrag.claimed = true
+    drag.current = { x: e.clientX, last: performance.now(), v: 0, start: e.clientX }
     document.body.style.cursor = 'grabbing'
   }
   const onMove = (e: ThreeEvent<PointerEvent>) => {
@@ -227,13 +235,22 @@ export function Chair() {
     const now = performance.now()
     const dt = Math.max(1, now - drag.current.last) / 1000
     spinner.current.rotation.y += dx * 0.012
-    drag.current = { x: e.clientX, last: now, v: (dx * 0.012) / dt }
+    drag.current = { ...drag.current, x: e.clientX, last: now, v: (dx * 0.012) / dt }
   }
   const onUp = (e: ThreeEvent<PointerEvent>) => {
     ;(e.target as Element).releasePointerCapture?.(e.pointerId)
-    if (drag.current) velocity.current = Math.max(-12, Math.min(12, drag.current.v))
+    const d = drag.current
     drag.current = null
     document.body.style.cursor = ''
+    if (!d) return
+    // A click without a spin sits you down at the desk.
+    if (Math.abs(e.clientX - d.start) < 6 && !wasDrag()) {
+      velocity.current = 0
+      props.onPointerOut()
+      sit()
+      return
+    }
+    velocity.current = Math.max(-12, Math.min(12, d.v))
   }
 
   const handBuilt = (
@@ -289,8 +306,9 @@ export function Chair() {
 
   // Pushed back from the desk and turned toward you, so it doesn't hide the monitor.
   return (
-    <group position={[0.42, 0, -1.02]}>
-      <group ref={spinner} {...props} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp}>
+    // Hidden once your head is where it is (sitting in it), so it never blocks the view.
+    <group ref={outer} position={[0.42, 0, -1.02]}>
+      <group ref={spinner} {...(seated ? {} : { ...props, onPointerDown: onDown, onPointerMove: onMove, onPointerUp: onUp })}>
         <Model url="/models/office_chair.glb" fit={{ height: 1.02 }} rotation={[0, CHAIR_TURN, 0]} fallback={handBuilt} />
       </group>
     </group>

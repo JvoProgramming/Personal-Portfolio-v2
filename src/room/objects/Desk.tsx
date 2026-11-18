@@ -1,6 +1,6 @@
 import { RoundedBox } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useInteractive } from '../interactive'
 import { grainNormal } from '../materials'
@@ -173,6 +173,10 @@ function ScreenGlass({ poweringOn, hovered, rect }: { poweringOn: boolean; hover
     return texture
   }, [])
   const motion = useRef({ x: 40, y: 50, vx: 46, vy: 34, acc: 1 })
+  // Draw and upload the "on" screen ahead of time, so the click that turns the PC on doesn't hitch.
+  const onScreen = useMemo(() => screenTexture(true), [])
+  const gl = useThree((s) => s.gl)
+  useEffect(() => gl.initTexture(onScreen), [gl, onScreen])
 
   useFrame((_, delta) => {
     const map = material.current?.map
@@ -222,7 +226,7 @@ function ScreenGlass({ poweringOn, hovered, rect }: { poweringOn: boolean; hover
 
   return (
     <mesh position={rect.pos} geometry={GLASS} scale={[rect.w / 0.44, rect.h / 0.33, 1]}>
-      <meshBasicMaterial ref={material} map={poweringOn ? screenTexture(true) : saver} toneMapped={false} color={poweringOn ? '#ffffff' : hovered ? '#e8eeff' : '#b8c4e6'} />
+      <meshBasicMaterial ref={material} map={poweringOn ? onScreen : saver} toneMapped={false} color={poweringOn ? '#ffffff' : hovered ? '#e8eeff' : '#b8c4e6'} />
     </mesh>
   )
 }

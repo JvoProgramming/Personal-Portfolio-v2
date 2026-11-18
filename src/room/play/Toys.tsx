@@ -7,7 +7,9 @@ import { Model } from '../Model'
 import { TennisBall } from '../objects/Tennis'
 import { bake, cone, ellipsoid, mixColor, sphere, union } from '../sdf'
 import { squeak } from './sound'
-import { grab, release, toys, updateToys, type Toy, type ToyKind } from './toys'
+import { pointerDrag } from '../look'
+import { useRoom } from '../roomStore'
+import { fetchToy, grab, putBack, release, toys, updateToys, type Toy, type ToyKind } from './toys'
 
 // Press a toy to pick it up, then flick and let go to throw it. A plain click lobs it gently forward.
 
@@ -135,11 +137,19 @@ interface Drag {
   toy: Toy
   /** Recent pointer positions (pixels) and times (seconds), for the flick speed. */
   trail: { x: number; y: number; t: number }[]
+  /** Picked up from the chair: a quick tap means "Mochi, fetch!" instead of a throw. */
+  seated: boolean
+  /** With the mouse captured (first person), the toy is held in front of you and the mouse aims. */
+  fps: boolean
+  from: THREE.Vector3
+  at: number
+  moved: number
 }
 
 function ToyMesh({ toy, onGrab }: { toy: Toy; onGrab: (t: Toy, e: ThreeEvent<PointerEvent>) => void }) {
   const ref = useRef<THREE.Group>(null)
-  const { props } = useInteractive('obj.toy', undefined, 'grab')
+  const seated = useRoom((s) => s.seated)
+  const { props } = useInteractive(seated ? 'obj.toySeated' : 'obj.toy', undefined, 'grab')
   const Look = LOOKS[toy.kind]
   useFrame(() => {
     const g = ref.current
@@ -177,7 +187,10 @@ export function Toys() {
     const move = (e: PointerEvent) => {
       const d = drag.current
       if (!d) return
-      pointer.current = { x: e.clientX, y: e.clientY }
+      // With the mouse captured, clientX/Y stand still: add up the raw movement instead.
+      if (d.fps) pointer.current = { x: pointer.current.x + e.movementX, y: pointer.current.y + e.movementY }
+      else pointer.current = { x: e.clientX, y: e.clientY }
+      d.moved += Math.abs(e.movementX) + Math.abs(e.movementY)
       d.trail.push({ x: e.clientX, y: e.clientY, t: performance.now() / 1000 })
       if (d.trail.length > 12) d.trail.shift()
     }
@@ -186,6 +199,12 @@ export function Toys() {
       if (!d) return
       drag.current = null
       document.body.style.cursor = ''
+      // From the chair, a quick tap on a toy (no hold, no aim) sends Mochi to fetch it where it lies.
+      if (d.seated && d.moved < 8 && performance.now() / 1000 - d.at < 0.22) {
+        putBack(d.toy, d.from)
+        fetchToy(d.toy)
+        return
+      }
       // Flick speed over the last ~120 ms, in screen heights per second.
       const now = performance.now() / 1000
       const recent = d.trail.filter((p) => now - p.t < 0.12)
@@ -201,6 +220,16 @@ export function Toys() {
       }
       const forward = new THREE.Vector3()
       camera.getWorldDirection(forward)
+      if (d.fps) {
+        // First person: throw where you're looking, harder the longer you held it back (up to a second).
+        const power = THREE.MathUtils.clamp(now - d.at, 0.25, 1)
+        const v = forward.multiplyScalar(2.2 + power * 3.2)
+        v.y += 1.1 + THREE.MathUtils.clamp(vy, 0, 4) * 0.5
+        v.clampLength(0, 7.5)
+        release(d.toy, v, now)
+        if (d.toy.kind === 'duck' || d.toy.kind === 'chicken') squeak()
+        return
+      }
       forward.y = 0
       forward.normalize()
       const right = new THREE.Vector3(-forward.z, 0, forward.x)
@@ -226,9 +255,20 @@ export function Toys() {
   }, [camera, gl])
 
   const onGrab = (toy: Toy, e: ThreeEvent<PointerEvent>) => {
+    pointerDrag.claimed = true
+    const from = toy.pos.clone()
     grab(toy)
     pointer.current = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY }
-    drag.current = { toy, trail: [{ ...pointer.current, t: performance.now() / 1000 }] }
+    const fps = !!document.pointerLockElement
+    drag.current = {
+      toy,
+      trail: [{ ...pointer.current, t: performance.now() / 1000 }],
+      seated: useRoom.getState().seated,
+      fps,
+      from,
+      at: performance.now() / 1000,
+      moved: 0,
+    }
     document.body.style.cursor = 'grabbing'
     if (toy.kind === 'duck' || toy.kind === 'chicken') squeak()
   }
@@ -240,7 +280,9 @@ export function Toys() {
     if (d) {
       // The held toy floats under the pointer, a little in front of the camera.
       const rect = gl.domElement.getBoundingClientRect()
-      ndc.set(((pointer.current.x - rect.left) / rect.width) * 2 - 1, -((pointer.current.y - rect.top) / rect.height) * 2 + 1)
+      // First person: hold it low in the middle of the view, so the crosshair still shows where it'll go.
+      if (d.fps) ndc.set(0.18, -0.45)
+      else ndc.set(((pointer.current.x - rect.left) / rect.width) * 2 - 1, -((pointer.current.y - rect.top) / rect.height) * 2 + 1)
       ray.setFromCamera(ndc, camera)
       d.toy.pos.copy(ray.ray.origin).addScaledVector(ray.ray.direction, HOLD)
     }

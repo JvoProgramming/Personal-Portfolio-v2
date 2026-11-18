@@ -7,6 +7,8 @@ export const WINDOW = { z0: -1.5, z1: -0.1, y0: 1.0, y1: 2.15 }
 export const DESK = { y: 0.76, z: -2.1 }
 /** Center of the monitor's glass; the camera flies here when the PC turns on. */
 export const SCREEN_POS = new THREE.Vector3(0, 1.06, -2.048)
+/** Your eyes when sitting in the desk chair. */
+export const SEAT_EYE = new THREE.Vector3(0.36, 1.2, -1.15)
 
 /** Small deterministic random generator, so the scene looks the same on every render. */
 export function seeded(seed: number) {
