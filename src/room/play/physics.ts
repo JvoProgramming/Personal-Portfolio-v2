@@ -21,7 +21,7 @@ export const OBSTACLES: Box[] = [
   box([0.38, 0, dz - 0.36], [0.98, top - 0.05, dz + 0.36]), // drawer unit (right)
   box([-1, 0, dz - 0.36], [-0.94, top - 0.05, dz + 0.36]), // left side panel
   box([-0.25, top, dz - 0.36], [0.25, top + 0.44, dz + 0.06]), // monitor
-  box([0.5, top, dz - 0.3], [0.74, top + 0.42, dz + 0.18]), // tower
+  box([-0.79, 0, dz - 0.31], [-0.57, 0.46, dz + 0.18]), // tower (on the floor under the desk)
   box([0.14, 0, -1.3], [0.7, 0.98, -0.74]), // office chair
   box([-2.82, 0, -0.36], [-2.02, 0.5, 0.46]), // bean bag
   box([-2.7, 0, -2.4], [-1.9, 0.28, -1.96]), // tennis bag
@@ -30,10 +30,15 @@ export const OBSTACLES: Box[] = [
   box([2.3, 0, -0.85], [2.5, 0.54, -0.65]), // side table base
   box([1.15, 0, -2.5], [1.55, 0.95, -2.18]), // guitar
   box([1.12, 0, 0.22], [3, 0.5, 1.16]), // bed
+  box([-3, 0, -1.8], [-2.62, 1.56, -0.7]), // cube shelf
+  box([-0.65, 0, 2.15], [0.95, 0.45, 2.5]), // media console
+  box([0.33, 0.45, 2.2], [0.63, 0.8, 2.48]), // TV
+  box([2.48, 0, 1.2], [2.95, 0.55, 1.75]), // nightstand
+  box([1.1, 0, 1.95], [1.6, 0.5, 2.4]), // big plant pot
 ]
 
-/** Inside the walls; the open front of the room has an invisible wall in front of the camera. */
-export const BOUNDS = box([-ROOM.halfW, 0, -ROOM.halfD], [ROOM.halfW, ROOM.height, 1.9])
+/** Inside the four walls. */
+export const BOUNDS = box([-ROOM.halfW, 0, -ROOM.halfD], [ROOM.halfW, ROOM.height, ROOM.halfD])
 
 const GRAVITY = 9.8
 const BOUNCE = 0.42

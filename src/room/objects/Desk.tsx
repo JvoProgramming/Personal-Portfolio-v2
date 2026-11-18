@@ -140,15 +140,12 @@ export function Desk() {
       <mesh geometry={MOUSE_CABLE}>
         <meshStandardMaterial color="#d8d2c2" roughness={0.6} />
       </mesh>
-      <Part pos={[0.33, y + 0.002, z + 0.24]} size={[0.2, 0.004, 0.18]} color="#2a2a40" radius={0.002} />
+      {/* A big felt desk mat under the keyboard and mouse */}
+      <Part pos={[0.06, y + 0.002, z + 0.25]} size={[0.92, 0.004, 0.34]} color="#2b2f36" rough={0.95} radius={0.002} />
       {/* A mug of tea */}
       <group position={[-0.42, y, z + 0.12]} rotation={[0, 2.4, 0]}>
         <Model url="/models/mug_red.glb" shadows={false} fit={{ height: 0.095 }} fallback={<group rotation={[0, -2.4, 0]}>{MUG}</group>} />
       </group>
-      {/* Books on the desk */}
-      {['#c0392b', '#2e86c1', '#27ae60'].map((c, i) => (
-        <Part key={c} pos={[0.82, y + 0.015 + i * 0.03, z - 0.25]} size={[0.24, 0.028, 0.17]} color={c} radius={0.004} />
-      ))}
     </group>
   )
 }
@@ -332,34 +329,37 @@ export function Computer() {
       <mesh position={[0.22, y + 0.1, z + 0.053]} material={ledMaterial}>
         <circleGeometry args={[0.008, 12]} />
       </mesh>
-      {/* Tower: two drive bays, floppy drive, power and reset, front vents */}
-      <Part pos={[0.62, y + 0.23, z - 0.05]} size={[0.2, 0.46, 0.44]} color={BEIGE} radius={0.015} rough={0.55} />
-      <Part pos={[0.62, y + 0.23, z + 0.168]} size={[0.18, 0.44, 0.01]} color="#d4cdbb" radius={0.004} />
-      {[0.41, 0.36].map((by) => (
-        <group key={by}>
-          <Part pos={[0.62, y + by, z + 0.175]} size={[0.15, 0.04, 0.006]} color="#cfc8b5" radius={0.003} />
-          <Part pos={[0.67, y + by - 0.01, z + 0.179]} size={[0.02, 0.008, 0.004]} color="#a9a291" />
-        </group>
-      ))}
-      <Part pos={[0.62, y + 0.3, z + 0.175]} size={[0.11, 0.03, 0.006]} color="#cfc8b5" radius={0.003} />
-      <Part pos={[0.6, y + 0.3, z + 0.179]} size={[0.07, 0.005, 0.004]} color="#3a372f" />
-      <mesh position={[0.62, y + 0.16, z + 0.176]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.016, 0.016, 0.01, 24]} />
-        <meshStandardMaterial color="#c9c2b0" roughness={0.45} />
-      </mesh>
-      <mesh position={[0.66, y + 0.16, z + 0.176]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.005, 0.005, 0.008, 12]} />
-        <meshStandardMaterial color="#a9a291" />
-      </mesh>
-      <mesh position={[0.58, y + 0.16, z + 0.177]} material={ledMaterial}>
-        <circleGeometry args={[0.005, 12]} />
-      </mesh>
-      {Array.from({ length: 6 }, (_, i) => (
-        <mesh key={i} position={[0.62, y + 0.05 + i * 0.012, z + 0.174]}>
-          <boxGeometry args={[0.12, 0.004, 0.002]} />
-          <meshStandardMaterial color="#8f8979" />
+      {/* Tower: on the floor under the left side of the desk, so the desktop stays clear. Two drive bays,
+          floppy drive, power and reset, front vents. */}
+      <group position={[-1.3, -y, 0.04]}>
+        <Part pos={[0.62, y + 0.23, z - 0.05]} size={[0.2, 0.46, 0.44]} color={BEIGE} radius={0.015} rough={0.55} />
+        <Part pos={[0.62, y + 0.23, z + 0.168]} size={[0.18, 0.44, 0.01]} color="#d4cdbb" radius={0.004} />
+        {[0.41, 0.36].map((by) => (
+          <group key={by}>
+            <Part pos={[0.62, y + by, z + 0.175]} size={[0.15, 0.04, 0.006]} color="#cfc8b5" radius={0.003} />
+            <Part pos={[0.67, y + by - 0.01, z + 0.179]} size={[0.02, 0.008, 0.004]} color="#a9a291" />
+          </group>
+        ))}
+        <Part pos={[0.62, y + 0.3, z + 0.175]} size={[0.11, 0.03, 0.006]} color="#cfc8b5" radius={0.003} />
+        <Part pos={[0.6, y + 0.3, z + 0.179]} size={[0.07, 0.005, 0.004]} color="#3a372f" />
+        <mesh position={[0.62, y + 0.16, z + 0.176]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.016, 0.016, 0.01, 24]} />
+          <meshStandardMaterial color="#c9c2b0" roughness={0.45} />
         </mesh>
-      ))}
+        <mesh position={[0.66, y + 0.16, z + 0.176]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.005, 0.005, 0.008, 12]} />
+          <meshStandardMaterial color="#a9a291" />
+        </mesh>
+        <mesh position={[0.58, y + 0.16, z + 0.177]} material={ledMaterial}>
+          <circleGeometry args={[0.005, 12]} />
+        </mesh>
+        {Array.from({ length: 6 }, (_, i) => (
+          <mesh key={i} position={[0.62, y + 0.05 + i * 0.012, z + 0.174]}>
+            <boxGeometry args={[0.12, 0.004, 0.002]} />
+            <meshStandardMaterial color="#8f8979" />
+          </mesh>
+        ))}
+      </group>
       <pointLight position={[0, y + 0.3, z + 0.35]} intensity={glow} distance={2.2} color="#7fa6ff" />
     </group>
   )
